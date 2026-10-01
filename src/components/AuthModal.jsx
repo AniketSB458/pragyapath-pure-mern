@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import logoImg from '../assets/logo.png';
 import {
   Lock,
   Mail,
@@ -160,12 +159,8 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
 
         {/* Modal Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-amber-500/25 border-2 border-amber-400 mx-auto bg-white flex items-center justify-center">
-            <img
-              src={logoImg}
-              alt="PragyaPath Logo"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 mx-auto">
+            <Lock className="w-6 h-6" />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             {mode === 'login' ? 'Sign in to PragyaPath' : 'Create Free Student Account'}
