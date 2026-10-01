@@ -76,9 +76,6 @@ const AppContent = () => {
               <span className="font-extrabold text-xl tracking-tight text-white drop-shadow-md">
                 PragyaPath
               </span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                MERN Stack
-              </span>
             </div>
           </div>
 
@@ -136,7 +133,7 @@ const AppContent = () => {
         {/* Footer */}
         <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-500 border-t border-white/10 backdrop-blur-md bg-black/40">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>PragyaPath • 100% Pure JavaScript MERN Stack</span>
+            <span>PragyaPath • Intelligent Career & Exam Navigator</span>
             <div className="flex items-center space-x-1.5 text-slate-400">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               <span>Official Gazettes & Examination Portals</span>

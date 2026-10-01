@@ -74,9 +74,6 @@ export const LandingPageView = () => {
             <span className="font-extrabold text-xl tracking-tight text-white drop-shadow-md">
               PragyaPath
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
-              MERN Stack
-            </span>
           </div>
         </div>
 
@@ -183,9 +180,9 @@ export const LandingPageView = () => {
       <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-500 border-t border-white/10 backdrop-blur-md bg-black/30">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-400">PragyaPath Portal</span>
+            <span className="font-bold text-slate-400">PragyaPath</span>
             <span className="text-slate-600">•</span>
-            <span>MERN Stack (MongoDB, Express, React, Node.js)</span>
+            <span>Intelligent Career & Exam Navigator</span>
           </div>
           <div className="flex items-center space-x-1.5 text-slate-400">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
