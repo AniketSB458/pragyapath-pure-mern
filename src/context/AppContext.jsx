@@ -746,4 +746,3 @@ const useApp = () => {
 };
 
 export { AppProvider, useApp };
-

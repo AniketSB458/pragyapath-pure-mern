@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import logoImg from "../assets/logo.png";
 import {
   User,
   X,
@@ -7,7 +8,9 @@ import {
   GraduationCap,
   Target,
   ShieldCheck,
-  Plus
+  Plus,
+  LogOut,
+  LogIn
 } from "lucide-react";
 const ProfileModal = ({ isOpen, onClose }) => {
   const { profile, updateProfile, showToast, t } = useApp();
@@ -54,8 +57,12 @@ const ProfileModal = ({ isOpen, onClose }) => {
   }
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
-              <User className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white flex items-center justify-center">
+              <img
+                src={logoImg}
+                alt="PragyaPath Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center space-x-2">

@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,8 +11,6 @@ import sessionRoutes from './routes/sessions.js';
 import practiceRoutes from './routes/practice.js';
 import noteRoutes from './routes/notes.js';
 import bookmarkRoutes from './routes/bookmarks.js';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
