@@ -81,10 +81,10 @@ const Header = ({ onOpenProfileModal }) => {
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <span className="font-black text-base sm:text-lg tracking-tight bg-linear-to-r from-slate-900 via-indigo-950 to-indigo-800 bg-clip-text text-transparent">
+                <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-amber-500 via-rose-500 to-pink-600 bg-clip-text text-transparent">
                   PragyaPath
                 </span>
-                <span className="hidden xs:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/60 backdrop-blur-md text-indigo-700 border border-indigo-200/80 shadow-2xs">
+                <span className="hidden xs:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-pink-50/80 backdrop-blur-md text-pink-700 border border-pink-200/80 shadow-2xs">
                   {activeExam?.name || profile.targetGoal}
                 </span>
               </div>
@@ -98,14 +98,14 @@ const Header = ({ onOpenProfileModal }) => {
                   onClick={() => setReminderMenuOpen(!reminderMenuOpen)}
                   className={`relative p-2 rounded-xl border transition-all cursor-pointer shadow-2xs ${
                     reminderMenuOpen
-                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                      : "bg-white/60 hover:bg-white/90 border-white/80 text-slate-700 hover:text-indigo-600 backdrop-blur-md"
+                      ? "bg-pink-50 border-pink-300 text-pink-700"
+                      : "bg-white/60 hover:bg-white/90 border-white/80 text-slate-700 hover:text-pink-600 backdrop-blur-md"
                   }`}
                   title="Daily Study Reminders & Alerts"
                 >
                   <Bell className="w-4 h-4" />
                   {activeRemindersCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white text-[9px] font-extrabold shadow-xs">
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-pink-500 text-white text-[9px] font-extrabold shadow-xs">
                       {activeRemindersCount}
                     </span>
                   )}
@@ -115,8 +115,8 @@ const Header = ({ onOpenProfileModal }) => {
                 {reminderMenuOpen && (
                   <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-slate-200/90 shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-7 h-7 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center">
                           <Bell className="w-3.5 h-3.5" />
                         </div>
                         <div>
@@ -124,7 +124,7 @@ const Header = ({ onOpenProfileModal }) => {
                           <p className="text-[10px] text-slate-500">Toast notification alerts</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200">
                         {activeRemindersCount} Scheduled
                       </span>
                     </div>
@@ -140,7 +140,7 @@ const Header = ({ onOpenProfileModal }) => {
                               session.completed
                                 ? "bg-slate-50/60 border-slate-200/50 opacity-60"
                                 : session.reminderEnabled
-                                ? "bg-indigo-50/40 border-indigo-100 hover:border-indigo-200"
+                                ? "bg-pink-50/40 border-pink-100 hover:border-pink-200"
                                 : "bg-white border-slate-100"
                             }`}
                           >
@@ -172,7 +172,7 @@ const Header = ({ onOpenProfileModal }) => {
                                 onClick={() => toggleTaskReminder(session.id)}
                                 className={`p-1 rounded-lg text-xs transition-colors cursor-pointer ${
                                   session.reminderEnabled
-                                    ? "text-indigo-600 bg-indigo-100/60"
+                                    ? "text-pink-600 bg-pink-100/60"
                                     : "text-slate-400 hover:text-slate-600"
                                 }`}
                                 title={session.reminderEnabled ? "Disable Reminder" : "Enable Reminder"}
@@ -188,7 +188,7 @@ const Header = ({ onOpenProfileModal }) => {
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
                       <button
                         onClick={quickScheduleAllReminders}
-                        className="text-indigo-600 font-bold hover:underline flex items-center space-x-1 cursor-pointer"
+                        className="text-pink-600 font-bold hover:underline flex items-center space-x-1 cursor-pointer"
                       >
                         <Sparkles className="w-3 h-3" />
                         <span>Schedule All Day</span>
@@ -198,7 +198,7 @@ const Header = ({ onOpenProfileModal }) => {
                           setReminderMenuOpen(false);
                           setActiveTab("planner");
                         }}
-                        className="text-slate-600 hover:text-indigo-600 font-semibold flex items-center space-x-1 cursor-pointer"
+                        className="text-slate-600 hover:text-pink-600 font-semibold flex items-center space-x-1 cursor-pointer"
                       >
                         <span>Planner</span>
                         <ArrowRight className="w-3 h-3" />
@@ -210,7 +210,7 @@ const Header = ({ onOpenProfileModal }) => {
 
               {/* Consistency Streak */}
               <div
-                className="flex items-center space-x-1 px-2.5 py-1 rounded-xl border border-amber-200/80 bg-linear-to-r from-amber-50/80 to-orange-50/80 backdrop-blur-md shadow-2xs text-amber-700 font-bold text-xs"
+                className="flex items-center space-x-1 px-2.5 py-1 rounded-xl border border-amber-200/80 bg-gradient-to-r from-amber-50/80 to-rose-50/80 backdrop-blur-md shadow-2xs text-amber-700 font-bold text-xs"
                 title={`${profile.streakDays || 1}-Day Active Study Consistency Streak`}
               >
                 <Flame className="w-4 h-4 fill-amber-500 text-amber-500 animate-pulse" />
@@ -218,12 +218,12 @@ const Header = ({ onOpenProfileModal }) => {
               </div>
 
               {/* Language Selector */}
-              <div className="flex items-center rounded-xl border border-white/80 p-0.5 bg-white/50 backdrop-blur-md shadow-2xs text-[11px] font-medium">
+              <div className="flex items-center rounded-xl border border-pink-100 p-0.5 bg-white/60 backdrop-blur-md shadow-2xs text-[11px] font-medium">
                 <button
                   onClick={() => setLanguage("en")}
                   className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                     language === "en"
-                      ? "bg-white/95 text-indigo-700 font-bold shadow-xs border border-white/60"
+                      ? "bg-white text-pink-600 font-bold shadow-xs border border-pink-100"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -233,7 +233,7 @@ const Header = ({ onOpenProfileModal }) => {
                   onClick={() => setLanguage("hi")}
                   className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                     language === "hi"
-                      ? "bg-white/95 text-indigo-700 font-bold shadow-xs border border-white/60"
+                      ? "bg-white text-pink-600 font-bold shadow-xs border border-pink-100"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -243,9 +243,9 @@ const Header = ({ onOpenProfileModal }) => {
                   onClick={() => setLanguage("mr")}
                   className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                     language === "mr"
-                      ? "bg-white/95 text-indigo-700 font-bold shadow-xs border border-white/60"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  ? "bg-white text-pink-600 font-bold shadow-xs border border-pink-100"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
                 >
                   मराठी
                 </button>
@@ -256,16 +256,16 @@ const Header = ({ onOpenProfileModal }) => {
                 <div className="flex items-center space-x-1.5">
                   <button
                     onClick={onOpenProfileModal}
-                    className="flex items-center space-x-1.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-emerald-300/80 bg-emerald-50/60 backdrop-blur-md hover:bg-emerald-100/70 shadow-2xs transition-all cursor-pointer group"
-                    title={`MongoDB Authenticated Account: ${user?.email || profile.email}`}
+                    className="flex items-center space-x-1.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-rose-200/80 bg-rose-50/40 backdrop-blur-md hover:bg-rose-100/60 shadow-2xs transition-all cursor-pointer group"
+                    title={`Account: ${user?.email || profile.email}`}
                   >
-                    <div className="w-6 h-6 rounded-lg bg-linear-to-tr from-indigo-600 to-purple-600 text-white text-[11px] font-bold flex items-center justify-center shadow-xs border border-white/20">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-pink-500 text-white text-[11px] font-bold flex items-center justify-center shadow-xs border border-white/20">
                       {getInitials(displayName)}
                     </div>
-                    <span className="text-xs font-semibold text-slate-800 hidden sm:inline group-hover:text-indigo-600 transition-colors">
+                    <span className="text-xs font-semibold text-slate-800 hidden sm:inline group-hover:text-pink-600 transition-colors">
                       {displayName.split(" ")[0]}
                     </span>
-                    <span className="hidden md:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-600 text-white">
+                    <span className="hidden md:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-gradient-to-r from-amber-500 to-rose-500 text-white">
                       PRO
                     </span>
                   </button>
@@ -283,16 +283,16 @@ const Header = ({ onOpenProfileModal }) => {
                 <div className="flex items-center space-x-1.5">
                   <button
                     onClick={() => openAuthModal("login")}
-                    className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/90 hover:bg-indigo-100 text-indigo-700 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                    className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50/90 hover:bg-rose-100 text-rose-700 text-xs font-bold shadow-2xs transition-all cursor-pointer"
                     title="Sign In to your PragyaPath account"
                   >
-                    <LogIn className="w-3.5 h-3.5" />
+                    <LogIn className="w-3.5 h-3.5 text-rose-600" />
                     <span>Sign In</span>
                   </button>
 
                   <button
                     onClick={() => openAuthModal("register")}
-                    className="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold shadow-sm shadow-indigo-500/25 transition-all cursor-pointer"
+                    className="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white text-xs font-bold shadow-sm shadow-pink-500/25 transition-all cursor-pointer"
                   >
                     <span>Register</span>
                   </button>

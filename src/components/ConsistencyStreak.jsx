@@ -189,12 +189,10 @@ const ConsistencyStreak = () => {
     /* Animated Flame Container */
   }
           <div className="relative group">
-            <div className="w-12 h-12 rounded-2xl bg-linear-to-tr from-amber-500 via-orange-500 to-red-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/25 border border-white/40 transform transition-transform group-hover:scale-105">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-pink-500/25 border border-white/40 transform transition-transform group-hover:scale-105">
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
-            {
-    /* Small active badge */
-  }
+            {/* Small active badge */}
             <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white" />
@@ -205,12 +203,12 @@ const ConsistencyStreak = () => {
             <div className="flex items-center space-x-2">
               <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center space-x-1.5">
                 <span>Consistency Streak:</span>
-                <span className="text-amber-600 font-mono text-xl sm:text-2xl font-black">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-rose-500 to-pink-600 font-mono text-xl sm:text-2xl font-black">
                   {currentStreak} Days
                 </span>
               </h2>
 
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-2xs">
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white shadow-2xs">
                 🔥 ON FIRE
               </span>
             </div>
@@ -223,9 +221,7 @@ const ConsistencyStreak = () => {
           </div>
         </div>
 
-        {
-    /* Check-in / Protect Streak Action */
-  }
+        {/* Check-in / Protect Streak Action */}
         <div className="flex items-center space-x-2 shrink-0">
           <div className="text-right hidden sm:block">
             <div className="text-[11px] font-bold text-slate-700">
@@ -237,28 +233,34 @@ const ConsistencyStreak = () => {
           </div>
 
           <button
-    onClick={handleCheckInToday}
-    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center space-x-1.5 border ${isStudiedToday ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200" : "bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-white/20 shadow-md shadow-orange-500/20"}`}
-    title="Log study session check-in to advance streak"
-  >
-            {isStudiedToday ? <>
+            onClick={handleCheckInToday}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center space-x-1.5 border ${
+              isStudiedToday
+                ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
+                : "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white border-white/20 shadow-md shadow-pink-500/25"
+            }`}
+            title="Log study session check-in to advance streak"
+          >
+            {isStudiedToday ? (
+              <>
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Today Completed</span>
-              </> : <>
+              </>
+            ) : (
+              <>
                 <Sparkles className="w-3.5 h-3.5 text-white" />
                 <span>Check-in Today (+1d)</span>
-              </>}
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {
-    /* 7-Day Rolling Visual Calendar Strip */
-  }
-      <div className="p-3.5 rounded-2xl bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-2xs relative z-10">
+      {/* 7-Day Rolling Visual Calendar Strip */}
+      <div className="p-3.5 rounded-2xl bg-white/70 backdrop-blur-md border border-rose-200/60 shadow-2xs relative z-10">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700">
-            <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+            <Calendar className="w-3.5 h-3.5 text-rose-500" />
             <span>Weekly Study Continuity</span>
           </div>
           <span className="text-[10px] text-slate-400 font-semibold">
@@ -267,14 +269,22 @@ const ConsistencyStreak = () => {
         </div>
 
         <div className="grid grid-cols-7 gap-2">
-          {weekDays.map((d, idx) => <div
-    key={idx}
-    className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-between ${d.isDone ? "bg-linear-to-b from-amber-50 to-orange-50/60 border-amber-300 text-amber-900 shadow-2xs" : d.isToday ? "bg-indigo-50/50 border-indigo-300 border-dashed text-indigo-900 ring-2 ring-indigo-400/20" : "bg-slate-50/50 border-slate-200/80 text-slate-400"}`}
-  >
+          {weekDays.map((d, idx) => (
+            <div
+              key={idx}
+              className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-between ${
+                d.isDone
+                  ? "bg-gradient-to-b from-amber-50 to-rose-50/60 border-amber-300 text-amber-900 shadow-2xs"
+                  : d.isToday
+                  ? "bg-pink-50/60 border-pink-300 border-dashed text-pink-900 ring-2 ring-pink-400/20"
+                  : "bg-slate-50/50 border-slate-200/80 text-slate-400"
+              }`}
+            >
               <span className="text-[10px] font-bold uppercase tracking-wider">{d.dayName}</span>
               <span className="text-xs font-black font-mono my-0.5">{d.dateNum}</span>
               {d.isDone ? <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-in zoom-in" /> : <span className="w-2 h-2 rounded-full bg-slate-300 my-0.5" />}
-            </div>)}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -285,18 +295,18 @@ const ConsistencyStreak = () => {
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-slate-700 flex items-center space-x-1.5">
             <span>Milestone Target:</span>
-            <strong className="text-indigo-700">{nextMilestone.title} ({nextMilestone.days} Days)</strong>
+            <strong className="text-rose-700">{nextMilestone.title} ({nextMilestone.days} Days)</strong>
           </span>
-          <span className="font-bold font-mono text-indigo-600">
+          <span className="font-bold font-mono text-pink-600">
             {currentStreak} / {nextMilestone.days} Days ({milestoneProgress}%)
           </span>
         </div>
 
-        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/60">
+        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-rose-200/60">
           <div
-    className="h-2 rounded-full bg-linear-to-r from-amber-500 via-orange-500 to-indigo-600 transition-all duration-700 ease-out"
-    style={{ width: `${milestoneProgress}%` }}
-  />
+            className="h-2 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 transition-all duration-700 ease-out"
+            style={{ width: `${milestoneProgress}%` }}
+          />
         </div>
       </div>
 

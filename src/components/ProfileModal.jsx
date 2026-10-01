@@ -88,18 +88,16 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
           </button>
         </div>
 
-        {
-    /* User Account Verification Pill */
-  }
-        <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs">
+        {/* User Account Verification Pill */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-100 text-xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-pink-500 text-white font-extrabold flex items-center justify-center text-xs">
               {name.charAt(0).toUpperCase()}
             </div>
             <div>
               <p className="font-bold text-slate-900">{name}</p>
               <p className="text-[11px] text-slate-600 flex items-center space-x-1">
-                <Mail className="w-3 h-3 text-indigo-500 inline" />
+                <Mail className="w-3 h-3 text-rose-500 inline" />
                 <span>{email}</span>
               </p>
             </div>
@@ -307,21 +305,19 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
             </div>
           </div>
 
-          {
-    /* Action Buttons */
-  }
+          {/* Action Buttons */}
           <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
             <button
-    type="button"
-    onClick={onClose}
-    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer transition-colors"
-  >
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer transition-colors"
+            >
               {t("profile_btn_cancel")}
             </button>
             <button
-    type="submit"
-    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/20 cursor-pointer transition-all"
-  >
+              type="submit"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-bold shadow-md shadow-pink-500/25 cursor-pointer transition-all"
+            >
               {t("profile_btn_save")}
             </button>
           </div>

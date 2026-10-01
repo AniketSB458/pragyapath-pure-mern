@@ -61,7 +61,7 @@ const Navigation = () => {
                 onClick={() => setActiveTab("dashboard")}
                 className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === "dashboard"
-                    ? "bg-linear-to-r from-indigo-600 via-indigo-600 to-purple-600 text-white shadow-sm shadow-indigo-500/25 border border-white/20 font-bold"
+                    ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white shadow-md shadow-pink-500/25 border border-white/20 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                 }`}
                 title="PragyaPath Dashboard & Overview"
@@ -85,7 +85,7 @@ const Navigation = () => {
                     onClick={() => setActiveTab(item.id)}
                     className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-linear-to-r from-indigo-600 via-indigo-600 to-purple-600 text-white shadow-sm shadow-indigo-500/25 border border-white/20 font-bold"
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white shadow-md shadow-pink-500/25 border border-white/20 font-bold"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
@@ -101,13 +101,13 @@ const Navigation = () => {
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeSecondaryItem
-                      ? "bg-indigo-50/80 backdrop-blur-md text-indigo-700 font-bold border border-indigo-200/80 shadow-2xs"
+                      ? "bg-pink-50/80 backdrop-blur-md text-pink-700 font-bold border border-pink-200/80 shadow-2xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                   }`}
                 >
                   {activeSecondaryItem ? (
                     <>
-                      <activeSecondaryItem.icon className="w-3.5 h-3.5 text-indigo-600" />
+                      <activeSecondaryItem.icon className="w-3.5 h-3.5 text-pink-600" />
                       <span>{activeSecondaryItem.label}</span>
                     </>
                   ) : (
@@ -130,7 +130,7 @@ const Navigation = () => {
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition-colors cursor-pointer ${
                             isActive
-                              ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-xs"
+                              ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white font-bold shadow-xs"
                               : "text-slate-700 hover:bg-white/70"
                           }`}
                         >
@@ -153,14 +153,14 @@ const Navigation = () => {
         <button
           onClick={() => setActiveTab("dashboard")}
           className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl cursor-pointer transition-all ${
-            activeTab === "dashboard" ? "text-indigo-600 font-bold bg-indigo-50/70" : "text-slate-500 hover:text-slate-800"
+            activeTab === "dashboard" ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500 hover:text-slate-800"
           }`}
           title="PragyaPath Home"
         >
           <div
             className={`w-7 h-7 rounded-xl overflow-hidden border transition-all bg-white flex items-center justify-center ${
               activeTab === "dashboard"
-                ? "border-amber-400 ring-2 ring-indigo-500 shadow-md shadow-amber-500/25 scale-110"
+                ? "border-amber-400 ring-2 ring-pink-500 shadow-md shadow-amber-500/25 scale-110"
                 : "border-amber-300/80 shadow-2xs hover:scale-105"
             }`}
           >
@@ -181,7 +181,7 @@ const Navigation = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
-                isActive ? "text-indigo-600 font-bold bg-indigo-50/60" : "text-slate-500"
+                isActive ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500"
               }`}
             >
               <Icon className="w-5 h-5" />
@@ -194,7 +194,7 @@ const Navigation = () => {
         <button
           onClick={() => setActiveTab("mentor")}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
-            activeTab === "mentor" ? "text-indigo-600 font-bold bg-indigo-50/60" : "text-slate-500"
+            activeTab === "mentor" ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500"
           }`}
           title="AI Mentor"
         >
@@ -207,7 +207,7 @@ const Navigation = () => {
           onClick={() => setIsMobileMoreOpen(true)}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
             activeSecondaryItem || activeTab === "library"
-              ? "text-indigo-600 font-bold bg-indigo-50/60"
+              ? "text-pink-600 font-bold bg-pink-50/70"
               : "text-slate-500"
           }`}
         >
@@ -251,7 +251,7 @@ const Navigation = () => {
                 }}
                 className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold ${
                   activeTab === "library"
-                    ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white border-white/30 shadow-xs"
+                    ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white border-white/30 shadow-xs"
                     : "bg-white/60 text-slate-700 border-white/80"
                 }`}
               >
@@ -271,7 +271,7 @@ const Navigation = () => {
                     }}
                     className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold ${
                       isActive
-                        ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white border-white/30 shadow-xs"
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white border-white/30 shadow-xs"
                         : "bg-white/60 text-slate-700 border-white/80"
                     }`}
                   >

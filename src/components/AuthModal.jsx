@@ -196,7 +196,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             onClick={() => handleTabSwitch('login')}
             className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
               mode === 'login'
-                ? 'bg-white text-indigo-700 shadow-xs font-bold'
+                ? 'bg-white text-pink-600 shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -207,7 +207,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             onClick={() => handleTabSwitch('register')}
             className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
               mode === 'register'
-                ? 'bg-white text-indigo-700 shadow-xs font-bold'
+                ? 'bg-white text-pink-600 shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -270,7 +270,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-md shadow-indigo-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-bold shadow-md shadow-pink-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -288,9 +288,9 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
                 type="button"
                 onClick={handleQuickDemoLogin}
                 disabled={isLoading}
-                className="w-full py-2.5 px-3 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-700 font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100/70 text-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>One-Click Instant Demo Login</span>
               </button>
             </div>
@@ -403,7 +403,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-md shadow-indigo-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-bold shadow-md shadow-pink-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -424,7 +424,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             <span>MongoDB Atlas & Local Ready</span>
           </div>
           <div className="flex items-center space-x-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+            <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
             <span>JWT + Bcrypt Blowfish</span>
           </div>
         </div>
