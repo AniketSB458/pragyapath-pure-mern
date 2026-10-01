@@ -27,7 +27,7 @@ const EXAM_PRESETS = [
   { id: 'state_psc', label: 'State Administrative PSC' }
 ];
 
-export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' }) => {
   const { login, register, showToast } = useApp();
   const [mode, setMode] = useState(initialMode); // 'login' | 'register'
 
@@ -68,7 +68,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     try {
       await login(loginEmail.trim(), loginPassword);
       showToast('Welcome back! Successfully authenticated with MongoDB.', 'success');
-      onClose();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (err) {
       setErrorMessage(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -109,7 +113,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         dailyHours: Number(regDailyHours)
       });
       showToast('Account created & profile initialized in MongoDB!', 'success');
-      onClose();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (err) {
       setErrorMessage(err.message || 'Registration failed. Please try a different email.');
     } finally {
@@ -139,7 +147,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         });
       }
       showToast('Logged in with Demo Student account!', 'success');
-      onClose();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (err) {
       setErrorMessage(err.message || 'Demo login failed.');
     } finally {
