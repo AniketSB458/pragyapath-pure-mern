@@ -1,7 +1,8 @@
+import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pragyapath_mern_jwt_secret_key_2026';
+const getSecret = () => process.env.JWT_SECRET || 'pragyapath_super_secret_jwt_key_2026_secure';
 
 // Mandatory authentication middleware for protected routes
 export const requireAuth = async (req, res, next) => {
@@ -22,7 +23,7 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getSecret());
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -57,7 +58,7 @@ export const optionalAuth = async (req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       if (token) {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, getSecret());
         const user = await User.findById(decoded.id);
         if (user) {
           req.user = user;
@@ -79,7 +80,7 @@ export const generateToken = (user) => {
       email: user.email,
       name: user.name
     },
-    JWT_SECRET,
+    getSecret(),
     { expiresIn: '30d' }
   );
 };

@@ -1,4 +1,5 @@
 import { useApp } from "../context/AppContext";
+import logoImg from "../assets/logo.png";
 import {
   ArrowRight,
   CheckCircle2,
@@ -36,14 +37,18 @@ const DashboardView = () => {
     /* Sleek Compact Glass Header */
   }
       <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl">
-        <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-indigo-600" />
-            <span className="tracking-tight">{t("dash_welcome")}, {profile.name}!</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {t("dash_intro_1")} <strong className="text-slate-800">{profile.targetGoal}</strong>. {t("dash_intro_2")}
-          </p>
+        <div className="flex items-center space-x-3">
+          <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white flex items-center justify-center">
+            <img src={logoImg} alt="PragyaPath Logo" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <span className="tracking-tight">{t("dash_welcome")}, {profile.name}!</span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {t("dash_intro_1")} <strong className="text-slate-800">{profile.targetGoal}</strong>. {t("dash_intro_2")}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
