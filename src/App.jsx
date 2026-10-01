@@ -21,7 +21,7 @@ import { AuthModal } from "./components/AuthModal";
 import logoImg from "./assets/logo.png";
 import heroVideo from "./assets/pragyapath-video.mp4";
 
-import { ShieldCheck, ArrowRight, PlayCircle, LogIn, Sparkles } from "lucide-react";
+import { ShieldCheck, ArrowRight, LogIn } from "lucide-react";
 
 const AppContent = () => {
   const {
@@ -36,34 +36,36 @@ const AppContent = () => {
   } = useApp();
 
   // Sequential Flow: "intro" -> "auth" -> "profile" -> "portal"
-  // Starts fresh on every page refresh (no sessionStorage bypass)
   const [flowStage, setFlowStage] = useState("intro");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // If user logs out from inside the portal, reset back to intro
+  // If user signs out from within the portal, reset back to intro
   useEffect(() => {
     if (!isAuthenticated && flowStage === "portal") {
       setFlowStage("intro");
     }
   }, [isAuthenticated, flowStage]);
 
-  // STAGE 1, 2, 3: Pre-Portal Sequential Gate (Video Intro -> Auth Modal -> Profile Form)
+  // ==========================================
+  // OUTSIDE WEBSITE: Full-Screen Cinematic Video (High Opacity)
+  // Stages: "intro" -> "auth" -> "profile"
+  // ==========================================
   if (flowStage !== "portal") {
     return (
       <div className="relative min-h-screen w-full overflow-hidden bg-slate-950 text-white font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
-        {/* Full-screen Background Video */}
+        {/* Full-screen Background Video with INCREASED OPACITY */}
         <div className="fixed inset-0 w-full h-full overflow-hidden z-0">
           <video
-            className="absolute top-0 left-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000"
+            className="absolute top-0 left-0 w-full h-full object-cover opacity-85 scale-105 transition-opacity duration-1000"
             src={heroVideo}
             autoPlay
             loop
             muted
             playsInline
           />
-          {/* Glassmorphic Film Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/55 to-slate-950/95" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.85)_100%)]" />
+          {/* Subtle balanced gradient: high video visibility + sharp text */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-slate-950/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.65)_100%)]" />
         </div>
 
         {/* Top Header Bar on Intro */}
@@ -86,7 +88,7 @@ const AppContent = () => {
             {isAuthenticated && (
               <button
                 onClick={() => setFlowStage("portal")}
-                className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 transition-all cursor-pointer shadow-md"
               >
                 Skip to Portal →
               </button>
@@ -103,11 +105,11 @@ const AppContent = () => {
 
         {/* Center Intro Showcase */}
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto py-8">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.35)] border-2 border-amber-400/90 mb-5 bg-white/10 backdrop-blur-xl p-1.5 animate-in zoom-in duration-500">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.4)] border-2 border-amber-400 mb-5 bg-white/10 backdrop-blur-xl p-1.5 animate-in zoom-in duration-500">
             <img src={logoImg} alt="PragyaPath Logo" className="w-full h-full object-cover rounded-2xl" />
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] mb-2 font-serif">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] mb-2 font-serif">
             <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 bg-clip-text text-transparent">
               PRAGYAPATH
             </span>
@@ -117,15 +119,15 @@ const AppContent = () => {
             Wisdom • Path • Knowledge
           </p>
 
-          <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8 drop-shadow-sm">
+          <p className="text-xs sm:text-sm md:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed mb-8 drop-shadow-md">
             AI-powered career discovery, exam eligibility engine, personalized phase-wise syllabi, curated free resources, and adaptive practice drills for competitive examinations.
           </p>
 
-          {/* Step 1 CTA: Opens Authentication Modal */}
+          {/* Proceed to Authentication CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
             <button
               onClick={() => setFlowStage("auth")}
-              className="w-full sm:w-auto flex-1 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm tracking-wide shadow-xl shadow-amber-500/30 transition-all cursor-pointer flex items-center justify-center space-x-2 group hover:scale-102"
+              className="w-full sm:w-auto flex-1 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm tracking-wide shadow-xl shadow-amber-500/35 transition-all cursor-pointer flex items-center justify-center space-x-2 group hover:scale-102"
             >
               <span>Continue to Authentication</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -134,11 +136,11 @@ const AppContent = () => {
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-500 border-t border-white/10 backdrop-blur-md bg-black/40">
+        <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-400 border-t border-white/10 backdrop-blur-md bg-black/40">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>PragyaPath • 100% Pure JavaScript MERN Stack</span>
-            <div className="flex items-center space-x-1.5 text-slate-400">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <div className="flex items-center space-x-1.5 text-slate-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Official Gazettes & Examination Portals</span>
             </div>
           </div>
@@ -163,11 +165,9 @@ const AppContent = () => {
         <ProfileModal
           isOpen={flowStage === "profile"}
           onClose={() => {
-            // Once profile is reviewed or closed, advance to Step 4: Main Website Portal
             setFlowStage("portal");
           }}
           onComplete={() => {
-            // After saving profile information, reveal the main website
             setFlowStage("portal");
           }}
         />
@@ -177,7 +177,10 @@ const AppContent = () => {
     );
   }
 
-  // STAGE 4: Main Website Portal (Revealed only after Video -> Auth -> Profile)
+  // ==========================================
+  // INSIDE WEBSITE (PORTAL): NO VIDEO HERE!
+  // Clean, focused, high-performance learning portal
+  // ==========================================
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 text-slate-900 font-sans flex flex-col selection:bg-indigo-500 selection:text-white animate-in fade-in duration-500">
       {/* Ambient Glassmorphic Background Glow Orbs */}
@@ -191,7 +194,7 @@ const AppContent = () => {
       {/* Navigation (Desktop Tabs & Mobile Bottom Navigation Bar) */}
       <Navigation onOpenProfileModal={() => setIsProfileModalOpen(true)} />
 
-      {/* Main Content Modules */}
+      {/* Main Content Modules (No Video Inside Website) */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-28 md:pb-8 relative z-0">
         {activeTab === "dashboard" && <DashboardView />}
         {activeTab === "careers" && <CareerDiscoveryView />}
