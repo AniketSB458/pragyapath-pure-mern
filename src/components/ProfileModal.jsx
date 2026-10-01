@@ -12,7 +12,7 @@ import {
   LogOut,
   LogIn
 } from "lucide-react";
-const ProfileModal = ({ isOpen, onClose }) => {
+const ProfileModal = ({ isOpen, onClose, onComplete }) => {
   const { profile, updateProfile, showToast, t } = useApp();
   const [name, setName] = useState(profile.name || "Anya Bandgar");
   const [email, setEmail] = useState(profile.email || "anyabandgar458@gmail.com");
@@ -48,6 +48,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
       weakTopics
     });
     showToast("Your personal profile and learning plan have been saved!", "success");
+    if (onComplete) onComplete();
     onClose();
   };
   return <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -77,7 +78,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
             </div>
           </div>
           <button
-    onClick={onClose}
+    onClick={() => {
+      if (onComplete) onComplete();
+      onClose();
+    }}
     className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
   >
             <X className="w-5 h-5" />
