@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Toast } from "./components/Toast";
 import { Header } from "./components/Header";
 import { Navigation } from "./components/Navigation";
+import { LandingPageView } from "./components/LandingPageView";
 
 import { DashboardView } from "./components/DashboardView";
 import { CareerDiscoveryView } from "./components/CareerDiscoveryView";
@@ -28,6 +29,7 @@ const AppContent = () => {
     activeTab,
     setActiveTab,
     t,
+    isAuthenticated,
     isAuthModalOpen,
     closeAuthModal,
     authModalInitialMode
@@ -35,8 +37,28 @@ const AppContent = () => {
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // 1. Initial State: Cinematic Video Landing Page with Authentication Gate
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 font-sans selection:bg-amber-500 selection:text-slate-950">
+        <LandingPageView />
+
+        {/* Auth Modal for Sign In & Registration with MongoDB Atlas */}
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={closeAuthModal}
+          initialMode={authModalInitialMode}
+        />
+
+        {/* Global Toast Alerts */}
+        <Toast />
+      </div>
+    );
+  }
+
+  // 2. Authenticated State: Full PragyaPath Portal & Learning Modules
   return (
-    <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 text-slate-900 font-sans flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 text-slate-900 font-sans flex flex-col selection:bg-indigo-500 selection:text-white animate-in fade-in duration-300">
       {/* Ambient Glassmorphic Background Glow Orbs */}
       <div className="fixed top-[-12%] left-[-8%] w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] rounded-full ambient-glow-1 blur-3xl pointer-events-none -z-10" />
       <div className="fixed top-[32%] right-[-12%] w-[600px] sm:w-[750px] h-[600px] sm:h-[750px] rounded-full ambient-glow-2 blur-3xl pointer-events-none -z-10" />
@@ -48,30 +70,29 @@ const AppContent = () => {
       {/* Navigation (Desktop Tabs & Mobile Bottom Navigation Bar) */}
       <Navigation onOpenProfileModal={() => setIsProfileModalOpen(true)} />
 
-      {/* Cinematic Hero Video Section */}
-      <div className="relative w-full h-[65vh] sm:h-[75vh] md:h-screen overflow-hidden shadow-2xl">
-        <video 
-          className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          src={heroVideo}
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full bg-black/60 text-center px-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-400 mb-4 bg-white/10 backdrop-blur-md p-1 animate-in zoom-in duration-300">
-            <img src={logoImg} alt="PragyaPath Logo" className="w-full h-full object-cover rounded-xl" />
+      {/* Optional Compact Hero Banner on Dashboard */}
+      {activeTab === "dashboard" && (
+        <div className="relative w-full h-48 sm:h-64 overflow-hidden shadow-md border-b border-amber-500/20 bg-slate-950">
+          <video 
+            className="absolute top-0 left-0 w-full h-full object-cover opacity-50 z-0"
+            src={heroVideo}
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          />
+          <div className="relative z-10 flex flex-col items-center justify-center h-full bg-gradient-to-b from-black/60 via-black/40 to-slate-950/80 text-center px-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide font-serif">
+              PRAGYAPATH LEARNING PORTAL
+            </h2>
+            <p className="text-xs sm:text-sm text-amber-300 uppercase tracking-widest mt-1">
+              Wisdom • Path • Knowledge
+            </p>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-wide mb-4">
-            PRAGYAPATH
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 uppercase tracking-widest">
-            Wisdom • Path • Knowledge
-          </p>
         </div>
-      </div>
+      )}
 
-      {/* Main Content */}
+      {/* Main Content Modules */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-28 md:pb-8 relative z-0">
         {activeTab === "dashboard" && <DashboardView />}
         {activeTab === "careers" && <CareerDiscoveryView />}
@@ -85,7 +106,7 @@ const AppContent = () => {
         {activeTab === "library" && <MyLibraryView />}
       </main>
 
-      {/* Auth Modal (Sign In / Register with MongoDB) */}
+      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={closeAuthModal}
