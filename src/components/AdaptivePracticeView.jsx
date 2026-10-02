@@ -1,438 +1,579 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import confetti from "canvas-confetti";
 import { useApp } from "../context/AppContext";
 import { PYQ_BANK } from "../data/mockData";
 import {
+  Target,
   CheckCircle2,
   XCircle,
+  HelpCircle,
   Bookmark,
-  Sparkles,
-  Star,
-  BrainCircuit,
+  BookmarkCheck,
   Languages,
-  Filter,
+  Sparkles,
+  ChevronRight,
+  ChevronLeft,
   RotateCcw,
-  Loader2
+  Zap,
+  Volume2,
+  Loader2,
+  Lightbulb
 } from "lucide-react";
+
 const AdaptivePracticeView = () => {
-  const {
-    profile,
-    updateProfile,
-    toggleBookmarkQuestion,
-    addWeakTopic,
-    setActiveTab,
-    showToast,
-    t
-  } = useApp();
-  const [selectedSubject, setSelectedSubject] = useState("All");
+  const { profile, updateProfile, addWeakTopic, resolveWeakTopic, toggleBookmarkQuestion, showToast, t } = useApp();
+
+  const [activeSubject, setActiveSubject] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [showExplanations, setShowExplanations] = useState({});
-  const [conceptExplanation, setConceptExplanation] = useState(null);
-  const [loadingExplanationKey, setLoadingExplanationKey] = useState(null);
-  const [aiQuestions, setAiQuestions] = useState([]);
-  const [isGeneratingAiQuestions, setIsGeneratingAiQuestions] = useState(false);
-  const [generatingTopic, setGeneratingTopic] = useState("");
-  const combinedQuestions = [...aiQuestions, ...PYQ_BANK];
-  const dynamicSubjects = Array.from(/* @__PURE__ */ new Set(["All", ...combinedQuestions.map((q) => q.subject)]));
-  const difficulties = ["All", "Easy", "Medium", "Hard"];
-  const filteredQuestions = combinedQuestions.filter((q) => {
-    const matchSubject = selectedSubject === "All" || q.subject === selectedSubject;
-    const matchDiff = selectedDifficulty === "All" || q.difficulty === selectedDifficulty;
-    return matchSubject && matchDiff;
-  });
-  const handleSelectOption = (question, optionIndex) => {
-    if (selectedAnswers[question.id] !== void 0) return;
-    setSelectedAnswers((prev) => ({ ...prev, [question.id]: optionIndex }));
-    setShowExplanations((prev) => ({ ...prev, [question.id]: true }));
-    const isCorrect = optionIndex === question.correctAnswerIndex;
-    const newSolved = profile.questionsSolved + 1;
-    const newCorrect = isCorrect ? profile.correctAnswers + 1 : profile.correctAnswers;
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+  const [isMultilingualModalOpen, setIsMultilingualModalOpen] = useState(false);
+  const [activeLanguage, setActiveLanguage] = useState(profile.language || "en");
+  const [translatedExplanation, setTranslatedExplanation] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Dynamic AI Question Generation State
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [customTopic, setCustomTopic] = useState("");
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
+
+  const combinedBank = useMemo(() => {
+    return [...generatedQuestions, ...PYQ_BANK];
+  }, [generatedQuestions]);
+
+  const subjects = [
+    "All",
+    "Operating Systems",
+    "Computer Architecture",
+    "Computer Networks",
+    "Database Management Systems",
+    "Algorithms & Data Structures",
+    "General Studies & Polity"
+  ];
+
+  const filteredQuestions = useMemo(() => {
+    return combinedBank.filter((q) => {
+      const matchSub = activeSubject === "All" || q.subject.toLowerCase().includes(activeSubject.toLowerCase());
+      const matchDiff = selectedDifficulty === "All" || q.difficulty === selectedDifficulty;
+      return matchSub && matchDiff;
+    });
+  }, [combinedBank, activeSubject, selectedDifficulty]);
+
+  const currentQ = filteredQuestions[currentIdx] || filteredQuestions[0];
+  const isBookmarked = currentQ ? profile.bookmarkedQuestionIds.includes(currentQ.id) : false;
+
+  const handleSelectOption = (idx) => {
+    if (isAnswerSubmitted) return;
+    setSelectedOption(idx);
+  };
+
+  const handleVerifyAnswer = () => {
+    if (selectedOption === null || !currentQ) return;
+    setIsAnswerSubmitted(true);
+
+    const isCorrect = selectedOption === currentQ.correctAnswerIndex;
+    const newQuestionsSolved = profile.questionsSolved + 1;
+    const newCorrect = profile.correctAnswers + (isCorrect ? 1 : 0);
+
     updateProfile({
-      questionsSolved: newSolved,
+      questionsSolved: newQuestionsSolved,
       correctAnswers: newCorrect
     });
+
     if (isCorrect) {
-      confetti({ particleCount: 35, spread: 50, origin: { y: 0.8 } });
+      resolveWeakTopic(currentQ.topic);
+      showToast("Correct! +2.0 marks added to your diagnostic tally", "success");
+      confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 } });
     } else {
-      addWeakTopic(question.topic);
+      addWeakTopic(currentQ.topic);
+      showToast(`Incorrect! Marked "${currentQ.topic}" as an active weak topic for revision`, "error");
     }
   };
-  const handleExplainInLanguage = async (topic, lang) => {
-    const key = `${topic}-${lang}`;
-    setLoadingExplanationKey(key);
+
+  const handleNextQuestion = () => {
+    if (currentIdx < filteredQuestions.length - 1) {
+      setCurrentIdx((prev) => prev + 1);
+      setSelectedOption(null);
+      setIsAnswerSubmitted(false);
+      setTranslatedExplanation(null);
+    }
+  };
+
+  const handlePrevQuestion = () => {
+    if (currentIdx > 0) {
+      setCurrentIdx((prev) => prev - 1);
+      setSelectedOption(null);
+      setIsAnswerSubmitted(false);
+      setTranslatedExplanation(null);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setActiveSubject("All");
+    setSelectedDifficulty("All");
+    setCurrentIdx(0);
+    setSelectedOption(null);
+    setIsAnswerSubmitted(false);
+  };
+
+  const handleGenerateQuestions = async (e) => {
+    e.preventDefault();
+    if (!customTopic.trim()) return;
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch("/api/practice/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: customTopic,
+          exam: profile.targetGoal || "GATE CS",
+          difficulty: selectedDifficulty === "All" ? "Hard" : selectedDifficulty,
+          count: 3
+        })
+      });
+
+      const data = await response.json();
+      if (data && data.questions && data.questions.length > 0) {
+        setGeneratedQuestions((prev) => [...data.questions, ...prev]);
+        setCurrentIdx(0);
+        setSelectedOption(null);
+        setIsAnswerSubmitted(false);
+        showToast(`Synthesized ${data.questions.length} authentic exam questions for ${customTopic}!`, "success");
+        setCustomTopic("");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Could not generate questions. Please try again.", "error");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const fetchMultilingualExplanation = async (targetLang) => {
+    setActiveLanguage(targetLang);
+    if (targetLang === "en") {
+      setTranslatedExplanation(null);
+      return;
+    }
+
+    setIsTranslating(true);
     try {
       const res = await fetch("/api/explain/concept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, language: lang })
-      });
-      const data = await res.json();
-      if (data && data.explanation) {
-        setConceptExplanation({
-          topic,
-          text: data.explanation,
-          lang: lang === "hi" ? "\u0939\u093F\u0928\u094D\u0926\u0940 (Hindi)" : "\u092E\u0930\u093E\u0920\u0940 (Marathi)"
-        });
-      } else {
-        showToast("Could not fetch explanation. Please try again.", "error");
-      }
-    } catch (e) {
-      console.error(e);
-      showToast("Network error while retrieving explanation.", "error");
-    } finally {
-      setLoadingExplanationKey(null);
-    }
-  };
-  const handleGenerateAiPractice = async (weakTopic) => {
-    setIsGeneratingAiQuestions(true);
-    setGeneratingTopic(weakTopic);
-    try {
-      const res = await fetch("/api/practice/generate-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          topic: weakTopic,
-          difficulty: "Medium",
-          count: 2
+          concept: currentQ.keyConcept,
+          context: currentQ.explanation,
+          language: targetLang
         })
       });
       const data = await res.json();
-      if (data && data.questions && Array.isArray(data.questions)) {
-        const mapped = data.questions.map((q, i) => ({
-          id: `ai-gen-${Date.now()}-${i}`,
-          exam: "Pragya Adaptive AI Generator",
-          year: 2026,
-          subject: q.subject || "Target Remedial Drill",
-          topic: weakTopic,
-          difficulty: q.difficulty || "Medium",
-          question: q.question,
-          options: q.options || [
-            "Mutual Exclusion invariant",
-            "Progress invariant",
-            "Bounded waiting",
-            "Starvation avoidance"
-          ],
-          correctAnswerIndex: typeof q.correctAnswerIndex === "number" ? q.correctAnswerIndex : 0,
-          explanation: q.explanation || "Detailed concept derivation.",
-          keyConcept: q.keyConcept || weakTopic,
-          frequencyRating: 5
-        }));
-        setAiQuestions((prev) => [...mapped, ...prev]);
-        showToast(`Generated 2 remedial questions for "${weakTopic}"`, "success");
-        confetti({ particleCount: 40, spread: 60 });
-      } else {
-        showToast("Could not formulate questions. Retrying with fallback.", "warning");
+      if (data && data.explanation) {
+        setTranslatedExplanation(data.explanation);
       }
     } catch (e) {
       console.error(e);
-      showToast("Error connecting to AI service.", "error");
+      showToast("Language model unavailable. Showing standard derivation.", "info");
     } finally {
-      setIsGeneratingAiQuestions(false);
-      setGeneratingTopic("");
+      setIsTranslating(false);
     }
   };
-  const handleResetFilters = () => {
-    setSelectedSubject("All");
-    setSelectedDifficulty("All");
+
+  const handleSpeakText = (text) => {
+    if (!window.speechSynthesis) {
+      showToast("Audio synthesis not supported by this browser.", "info");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = activeLanguage === "hi" ? "hi-IN" : activeLanguage === "mr" ? "mr-IN" : "en-IN";
+    window.speechSynthesis.speak(utterance);
+    showToast("Reading solution aloud...", "info");
   };
-  return <div className="space-y-4">
-      {
-    /* Sleek Compact Glass Header */
-  }
-      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl">
+
+  return (
+    <div className="space-y-6 text-white">
+      {/* Sleek Compact Glass Header */}
+      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <BrainCircuit className="w-5 h-5 text-indigo-600" />
+          <h1 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+            <Target className="w-5 h-5 text-amber-400" />
             <span className="tracking-tight">{t("practice_banner_title")}</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             {t("practice_banner_desc")}
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 text-xs shrink-0">
-          <div className="bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/80 text-slate-700 shadow-2xs">
-            <span>{t("practice_total_solved")}: </span>
-            <strong className="text-slate-900">{profile.questionsSolved}</strong>
+        {/* Stats Pill */}
+        <div className="flex items-center space-x-3 text-xs shrink-0">
+          <div className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-300 font-bold">
+            Solved: {profile.questionsSolved}
           </div>
-          <div className="bg-emerald-50/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-200/80 text-emerald-800 shadow-2xs">
-            <span>{t("practice_accuracy_rate")}: </span>
-            <strong className="font-bold">
-              {profile.questionsSolved > 0 ? Math.round(profile.correctAnswers / profile.questionsSolved * 100) : 0}
-              %
-            </strong>
+          <div className="px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
+            Accuracy: {profile.questionsSolved > 0 ? Math.round((profile.correctAnswers / profile.questionsSolved) * 100) : 0}%
           </div>
         </div>
       </div>
 
-      {
-    /* Filter Bar & AI Generator Trigger */
-  }
-      <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          {
-    /* Subject Filters */
-  }
-          <div className="flex items-center space-x-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 no-scrollbar">
-            {dynamicSubjects.map((sub) => <button
-    key={sub}
-    onClick={() => setSelectedSubject(sub)}
-    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedSubject === sub ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-xs border border-white/20" : "bg-white/60 text-slate-700 hover:bg-white/90 border border-white/70"}`}
-  >
-                {sub}
-              </button>)}
-          </div>
-
-          {
-    /* Difficulty Filter */
-  }
-          <div className="flex items-center space-x-1 border border-white/80 rounded-xl p-0.5 bg-white/50 backdrop-blur-md text-xs shrink-0 self-end md:self-auto shadow-2xs">
-            {difficulties.map((diff) => <button
-    key={diff}
-    onClick={() => setSelectedDifficulty(diff)}
-    className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${selectedDifficulty === diff ? "bg-white text-indigo-700 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-  >
-                {diff}
-              </button>)}
-          </div>
-        </div>
-      </div>
-
-      {
-    /* Loading AI State Banner */
-  }
-      {isGeneratingAiQuestions && <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center space-x-3 text-indigo-900 animate-pulse">
-          <Loader2 className="w-5 h-5 text-indigo-600 animate-spin shrink-0" />
-          <div>
-            <p className="text-xs font-bold">
-              Synthesizing targeted practice drill for "{generatingTopic}"...
-            </p>
-            <p className="text-[11px] text-indigo-700">
-              Formulating authentic exam-pattern options and rigorous step-by-step derivations.
-            </p>
-          </div>
-        </div>}
-
-      {
-    /* Empty State when Filter returns 0 */
-  }
-      {filteredQuestions.length === 0 && !isGeneratingAiQuestions && <div className="bg-white rounded-2xl border border-slate-200/90 p-8 sm:p-12 text-center space-y-4 shadow-2xs">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-            <Filter className="w-6 h-6" />
+      {/* AI Dynamic Question Generator Card */}
+      <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 bg-slate-900/70 backdrop-blur-xl shadow-xl space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <Sparkles className="w-4 h-4 text-amber-400" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900">
-              No questions found for the selected criteria
+            <h3 className="text-xs sm:text-sm font-bold text-white">
+              AI Adaptive Drill Generator
             </h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-              We couldn't find any questions matching subject "{selectedSubject}" with difficulty "{selectedDifficulty}".
+            <p className="text-[11px] text-slate-400">
+              Need targeted questions on an elusive weak area? Generate high-yield PYQs instantly.
             </p>
           </div>
+        </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button
-    onClick={handleResetFilters}
-    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-  >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset All Filters</span>
-            </button>
+        <form onSubmit={handleGenerateQuestions} className="flex flex-col sm:flex-row gap-2 pt-1">
+          <input
+            type="text"
+            value={customTopic}
+            onChange={(e) => setCustomTopic(e.target.value)}
+            placeholder="e.g. Cache Mapping, Virtual Memory Paging, or Indian Polity Writs"
+            className="flex-1 px-3 py-2 text-xs rounded-xl border border-white/15 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+          <button
+            type="submit"
+            disabled={isGenerating || !customTopic.trim()}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Formulating PYQs...</span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5" />
+                <span>Generate Adaptive Drill</span>
+              </>
+            )}
+          </button>
+        </form>
+      </div>
 
+      {/* Filter Selector Bars */}
+      <div className="space-y-3">
+        {/* Subject Pills */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-1">
+          {subjects.map((sub) => (
             <button
-    onClick={() => handleGenerateAiPractice(selectedSubject === "All" ? "Computer Networks" : selectedSubject)}
-    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-  >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Generate AI Practice on {selectedSubject === "All" ? "Target Topic" : selectedSubject}</span>
+              key={sub}
+              onClick={() => {
+                setActiveSubject(sub);
+                setCurrentIdx(0);
+                setSelectedOption(null);
+                setIsAnswerSubmitted(false);
+              }}
+              className={`px-3 py-1.5 text-xs rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                activeSubject === sub
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-2xs"
+                  : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
+              }`}
+            >
+              {sub}
             </button>
+          ))}
+        </div>
+
+        {/* Difficulty Filter */}
+        <div className="flex items-center space-x-2 text-xs">
+          <span className="text-slate-400 font-medium">Difficulty:</span>
+          {["All", "Easy", "Medium", "Hard"].map((diff) => (
+            <button
+              key={diff}
+              onClick={() => {
+                setSelectedDifficulty(diff);
+                setCurrentIdx(0);
+                setSelectedOption(null);
+                setIsAnswerSubmitted(false);
+              }}
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                selectedDifficulty === diff
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-xs"
+                  : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
+              }`}
+            >
+              {diff}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Interactive Question Card */}
+      {currentQ ? (
+        <div className="glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 bg-slate-900/80 backdrop-blur-2xl shadow-2xl space-y-5">
+          {/* Question Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/30">
+                {currentQ.exam} {currentQ.year}
+              </span>
+              <span className="text-xs text-slate-400">
+                {currentQ.subject} • {currentQ.topic}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span
+                className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
+                  currentQ.difficulty === "Hard"
+                    ? "bg-rose-500/15 text-rose-300 border border-rose-500/30"
+                    : currentQ.difficulty === "Medium"
+                    ? "bg-amber-500/15 text-amber-300 border border-amber-400/30"
+                    : "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                }`}
+              >
+                {currentQ.difficulty}
+              </span>
+
+              <button
+                onClick={() => toggleBookmarkQuestion(currentQ.id)}
+                className="p-1 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-white/10 transition-colors cursor-pointer"
+                title={isBookmarked ? "Remove Bookmark" : "Bookmark Question"}
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Bookmark className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>}
 
-      {
-    /* Questions Feed */
-  }
-      <div className="space-y-6">
-        {filteredQuestions.map((q) => {
-    const userAnswer = selectedAnswers[q.id];
-    const hasAnswered = userAnswer !== void 0;
-    const isCorrect = userAnswer === q.correctAnswerIndex;
-    const isBookmarked = profile.bookmarkedQuestionIds.includes(q.id);
-    return <div
-      key={q.id}
-      className="glass-card rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-all space-y-4"
-    >
-              {
-      /* Question Header Meta */
-    }
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200/60">
-                    {q.exam} {q.year}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                    {q.subject} • {q.topic}
-                  </span>
-                  <span
-      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${q.difficulty === "Easy" ? "bg-emerald-100 text-emerald-800" : q.difficulty === "Medium" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}
-    >
-                    {q.difficulty}
-                  </span>
-                </div>
+          {/* Question Body */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Question {currentIdx + 1} of {filteredQuestions.length}</span>
+              <span className="text-amber-400 font-semibold">+2.0 Marks • Negative: -0.66</span>
+            </div>
 
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center text-amber-400" title="Historical PYQ Frequency Weightage">
-                    {Array.from({ length: q.frequencyRating || 4 }).map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />)}
-                  </div>
+            <p className="text-sm sm:text-base font-semibold text-white leading-relaxed font-sans">
+              {currentQ.question}
+            </p>
 
+            {/* Options List */}
+            <div className="space-y-2.5 pt-1">
+              {currentQ.options.map((opt, oIdx) => {
+                const isSelected = selectedOption === oIdx;
+                const isCorrect = oIdx === currentQ.correctAnswerIndex;
+
+                let optionStyle = "bg-slate-800/60 hover:bg-slate-800 border-white/10 hover:border-amber-400/30 text-slate-200";
+
+                if (isAnswerSubmitted) {
+                  if (isCorrect) {
+                    optionStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold shadow-xs";
+                  } else if (isSelected) {
+                    optionStyle = "bg-rose-500/20 border-rose-500 text-rose-300 font-bold";
+                  } else {
+                    optionStyle = "bg-slate-900/40 border-white/5 text-slate-500 opacity-60";
+                  }
+                } else if (isSelected) {
+                  optionStyle = "bg-amber-500/20 border-amber-400 text-white font-bold ring-1 ring-amber-400/50 shadow-xs";
+                }
+
+                return (
                   <button
-      onClick={() => toggleBookmarkQuestion(q.id)}
-      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
-      title={isBookmarked ? "Remove Bookmark" : "Save to My Library"}
-    >
-                    <Bookmark
-      className={`w-4 h-4 ${isBookmarked ? "fill-indigo-600 text-indigo-600" : ""}`}
-    />
+                    key={oIdx}
+                    onClick={() => handleSelectOption(oIdx)}
+                    disabled={isAnswerSubmitted}
+                    className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm flex items-start space-x-3 transition-all cursor-pointer ${optionStyle}`}
+                  >
+                    <span
+                      className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs shrink-0 ${
+                        isSelected ? "bg-amber-400 text-slate-950 font-black" : "bg-white/10 text-slate-300"
+                      }`}
+                    >
+                      {["A", "B", "C", "D"][oIdx]}
+                    </span>
+                    <span className="flex-1 mt-0.5 leading-relaxed">{opt}</span>
+                    {isAnswerSubmitted && isCorrect && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    )}
+                    {isAnswerSubmitted && isSelected && !isCorrect && (
+                      <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    )}
                   </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
+            <div className="flex items-center space-x-2">
+              <button
+                disabled={currentIdx === 0}
+                onClick={handlePrevQuestion}
+                className="px-3 py-1.5 rounded-xl border border-white/15 text-slate-300 hover:bg-white/10 text-xs font-bold disabled:opacity-40 cursor-pointer flex items-center space-x-1"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Prev</span>
+              </button>
+
+              <button
+                disabled={currentIdx >= filteredQuestions.length - 1}
+                onClick={handleNextQuestion}
+                className="px-3 py-1.5 rounded-xl border border-white/15 text-slate-300 hover:bg-white/10 text-xs font-bold disabled:opacity-40 cursor-pointer flex items-center space-x-1"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              {!isAnswerSubmitted ? (
+                <button
+                  disabled={selectedOption === null}
+                  onClick={handleVerifyAnswer}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 disabled:opacity-50 cursor-pointer"
+                >
+                  Verify & Derive Solution
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsMultilingualModalOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white border border-white/15 font-bold text-xs transition-all cursor-pointer flex items-center space-x-1.5"
+                >
+                  <Languages className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Multilingual Explanation (हिंदी / मराठी)</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Verified Solution Card */}
+          {isAnswerSubmitted && (
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-white/10 space-y-2.5 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Correct Answer: Option {["A", "B", "C", "D"][currentQ.correctAnswerIndex]}</span>
                 </div>
+
+                <button
+                  onClick={() => handleSpeakText(currentQ.explanation)}
+                  className="p-1.5 rounded-lg bg-white/10 text-slate-300 hover:text-amber-400 transition-colors"
+                  title="Speak Solution"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {
-      /* Question Prompt */
-    }
-              <p className="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed font-sans">
-                {q.question}
+              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                {currentQ.explanation}
               </p>
 
-              {
-      /* Multiple Choice Options */
-    }
-              <div className="space-y-2">
-                {q.options.map((opt, optIndex) => {
-      let optionClass = "border-slate-200/90 bg-slate-50/50 hover:bg-indigo-50/40 hover:border-indigo-300 text-slate-800";
-      if (hasAnswered) {
-        if (optIndex === q.correctAnswerIndex) {
-          optionClass = "border-emerald-500 bg-emerald-50 text-emerald-950 font-bold";
-        } else if (userAnswer === optIndex) {
-          optionClass = "border-rose-500 bg-rose-50 text-rose-950 font-bold";
-        } else {
-          optionClass = "border-slate-200 opacity-60 text-slate-500";
-        }
-      }
-      const optionLabels = ["A", "B", "C", "D"];
-      return <button
-        key={optIndex}
-        disabled={hasAnswered}
-        onClick={() => handleSelectOption(q, optIndex)}
-        className={`w-full text-left p-3.5 rounded-xl border text-xs flex items-start space-x-3 transition-all cursor-pointer ${optionClass}`}
-      >
-                      <span
-        className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs shrink-0 ${hasAnswered && optIndex === q.correctAnswerIndex ? "bg-emerald-600 text-white" : hasAnswered && userAnswer === optIndex ? "bg-rose-600 text-white" : "bg-white border border-slate-300 text-slate-700"}`}
-      >
-                        {optionLabels[optIndex]}
-                      </span>
-                      <span className="flex-1 mt-0.5 leading-relaxed">{opt}</span>
-                    </button>;
-    })}
+              <div className="pt-2 border-t border-white/10 flex items-center space-x-2 text-xs">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-amber-300 font-semibold">Key Principle: {currentQ.keyConcept}</span>
               </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="glass-card rounded-2xl border border-white/10 p-8 text-center space-y-3 bg-slate-900/60">
+          <p className="text-sm text-slate-400">No questions match the selected subject and difficulty filters.</p>
+          <button
+            onClick={handleResetFilters}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold transition-all cursor-pointer"
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
 
-              {
-      /* Feedback and Rigorous Derivation Explanation */
-    }
-              {hasAnswered && <div className="pt-3 border-t border-slate-100 space-y-3 animate-in fade-in duration-150">
-                  <div
-      className={`p-4 rounded-xl border flex items-start space-x-3 ${isCorrect ? "bg-emerald-50/70 border-emerald-200 text-emerald-900" : "bg-rose-50/70 border-rose-200 text-rose-900"}`}
-    >
-                    {isCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" /> : <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />}
-
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold">
-                        {isCorrect ? "Correct Solution! +1 Mark" : `Incorrect! Option ${["A", "B", "C", "D"][q.correctAnswerIndex]} was the correct answer.`}
-                      </p>
-                      <p className="text-xs leading-relaxed opacity-95">{q.explanation}</p>
-                      <div className="pt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                        <span className="text-indigo-800">Core Conceptual Principle:</span>
-                        <span className="bg-white/80 px-2 py-0.5 rounded text-indigo-950 border border-indigo-200">
-                          {q.keyConcept}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {
-      /* Remedial Triggers & Multilingual Action Bar */
-    }
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-      onClick={() => handleExplainInLanguage(q.topic, "hi")}
-      disabled={loadingExplanationKey === `${q.topic}-hi`}
-      className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 font-semibold transition-colors cursor-pointer disabled:opacity-60"
-    >
-                        {loadingExplanationKey === `${q.topic}-hi` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Languages className="w-3.5 h-3.5" />}
-                        <span>{t("practice_btn_explain_hindi")}</span>
-                      </button>
-
-                      <button
-      onClick={() => handleExplainInLanguage(q.topic, "mr")}
-      disabled={loadingExplanationKey === `${q.topic}-mr`}
-      className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 font-semibold transition-colors cursor-pointer disabled:opacity-60"
-    >
-                        {loadingExplanationKey === `${q.topic}-mr` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Languages className="w-3.5 h-3.5" />}
-                        <span>{t("practice_btn_explain_marathi")}</span>
-                      </button>
-                    </div>
-
-                    {!isCorrect && <button
-      onClick={() => handleGenerateAiPractice(q.topic)}
-      disabled={isGeneratingAiQuestions}
-      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
-    >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Generate 2 AI Practice Questions</span>
-                      </button>}
-                  </div>
-                </div>}
-            </div>;
-  })}
-      </div>
-
-      {
-    /* Multilingual Explanation Modal */
-  }
-      {conceptExplanation && <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      {/* Multilingual Explanation Modal */}
+      {isMultilingualModalOpen && currentQ && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-panel rounded-3xl max-w-xl w-full p-6 border border-white/15 bg-slate-900/95 space-y-4 text-white animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center space-x-2">
-                <Languages className="w-5 h-5 text-indigo-600 shrink-0" />
-                <h3 className="text-sm font-bold text-slate-900 truncate">
-                  Concept Primer in {conceptExplanation.lang}
-                </h3>
+                <Languages className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-bold text-white">Multilingual Concept Derivation</h3>
               </div>
               <button
-    onClick={() => setConceptExplanation(null)}
-    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold"
-  >
+                onClick={() => setIsMultilingualModalOpen(false)}
+                className="text-slate-400 hover:text-white text-lg font-bold cursor-pointer"
+              >
                 ×
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-line font-serif max-h-[60vh] overflow-y-auto">
-              {conceptExplanation.text}
+            {/* Language Switcher Buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => fetchMultilingualExplanation("en")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
+                  activeLanguage === "en"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black"
+                    : "bg-white/10 text-slate-300"
+                }`}
+              >
+                English
+              </button>
+              <button
+                onClick={() => fetchMultilingualExplanation("hi")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
+                  activeLanguage === "hi"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black"
+                    : "bg-white/10 text-slate-300"
+                }`}
+              >
+                हिंदी (Hindi)
+              </button>
+              <button
+                onClick={() => fetchMultilingualExplanation("mr")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
+                  activeLanguage === "mr"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black"
+                    : "bg-white/10 text-slate-300"
+                }`}
+              >
+                मराठी (Marathi)
+              </button>
             </div>
 
-            <div className="flex justify-end pt-1">
+            {/* Translation Output */}
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/10 min-h-[140px] text-xs leading-relaxed space-y-2">
+              {isTranslating ? (
+                <div className="flex items-center justify-center space-x-2 py-8 text-slate-400">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                  <span>Translating exam derivation with grammatical precision...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="font-bold text-amber-400">{currentQ.keyConcept}</div>
+                  <p className="text-slate-200">
+                    {translatedExplanation || currentQ.explanation}
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
               <button
-    onClick={() => setConceptExplanation(null)}
-    className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all cursor-pointer"
-  >
-                Got It! Return to Practice
+                onClick={() => setIsMultilingualModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 };
-export {
-  AdaptivePracticeView
-};
+
+export { AdaptivePracticeView };

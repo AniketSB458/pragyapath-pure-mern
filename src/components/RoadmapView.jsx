@@ -3,41 +3,44 @@ import confetti from "canvas-confetti";
 import { useApp } from "../context/AppContext";
 import { ROADMAPS_DATABASE } from "../data/mockData";
 import {
-  Route,
+  GitFork,
   CheckCircle2,
+  Circle,
   Clock,
-  Sparkles,
-  BookOpen,
-  HelpCircle,
   ChevronDown,
   ChevronUp,
-  FastForward
+  Sparkles,
+  ArrowRight,
+  BookOpen,
+  Target,
+  Zap,
+  CalendarCheck
 } from "lucide-react";
+
 const RoadmapView = () => {
-  const { profile, activeRoadmap, setActiveRoadmap, toggleTopicCompletion, setActiveTab, t } = useApp();
-  const [expandedPhases, setExpandedPhases] = useState({
-    1: true,
-    2: true,
-    3: false,
-    4: false,
-    5: false
-  });
+  const { profile, activeRoadmap, toggleTopicCompletion, addDailySession, setActiveTab, showToast, t } = useApp();
+  const [expandedPhases, setExpandedPhases] = useState({ 0: true, 1: true });
   const [customGoalInput, setCustomGoalInput] = useState("");
-  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
-  const togglePhase = (phaseNumber) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const roadmap = activeRoadmap || ROADMAPS_DATABASE["gate-cs-roadmap"] || Object.values(ROADMAPS_DATABASE)[0];
+
+  const totalTopics = roadmap.phases.reduce((acc, p) => acc + p.topics.length, 0);
+  const completedTopicsCount = roadmap.phases
+    .flatMap((p) => p.topics)
+    .filter((topic) => profile.completedTopicIds.includes(topic.id)).length;
+  const progressPercent = totalTopics > 0 ? Math.round((completedTopicsCount / totalTopics) * 100) : 0;
+
+  const togglePhase = (idx) => {
     setExpandedPhases((prev) => ({
       ...prev,
-      [phaseNumber]: !prev[phaseNumber]
+      [idx]: !prev[idx]
     }));
   };
-  const allTopics = activeRoadmap.phases.flatMap((p) => p.topics);
-  const completedTopicsCount = allTopics.filter((t2) => profile.completedTopicIds.includes(t2.id)).length;
-  const progressPercent = allTopics.length > 0 ? Math.round(completedTopicsCount / allTopics.length * 100) : 0;
-  const totalHours = allTopics.reduce((acc, t2) => acc + t2.estimatedHours, 0);
-  const remainingHours = allTopics.filter((t2) => !profile.completedTopicIds.includes(t2.id)).reduce((acc, t2) => acc + t2.estimatedHours, 0);
-  const handleToggleTopic = (topic) => {
-    const isNowCompleted = !profile.completedTopicIds.includes(topic.id);
-    toggleTopicCompletion(topic.id);
+
+  const handleToggleTopic = (topicId) => {
+    const isNowCompleted = !profile.completedTopicIds.includes(topicId);
+    toggleTopicCompletion(topicId);
     if (isNowCompleted) {
       confetti({
         particleCount: 50,
@@ -46,314 +49,264 @@ const RoadmapView = () => {
       });
     }
   };
-  const handleGenerateCustomRoadmap = async () => {
-    if (!customGoalInput.trim()) return;
-    setIsGeneratingRoadmap(true);
-    try {
-      const newRoadmap = {
-        id: `custom_${Date.now()}`,
-        goalId: customGoalInput,
-        title: `${customGoalInput} Accelerated Pathway`,
-        description: `Custom generated roadmap synthesized for ${customGoalInput} based on your ${profile.dailyHours}h daily schedule.`,
-        totalWeeks: 24,
-        phases: [
-          {
-            phaseNumber: 1,
-            phaseName: "Phase 1: Foundational Tools & Core Principles",
-            durationWeeks: 6,
-            objective: `Establish core vocabulary and fundamental toolchains for ${customGoalInput}.`,
-            topics: [
-              {
-                id: `ct-1-${Date.now()}`,
-                title: "Foundational Theory & Environment Setup",
-                estimatedHours: 20,
-                description: "Core concepts, prerequisite mathematical tools, and foundational workflows.",
-                coreConcepts: ["System Basics", "Command Line", "Core Mathematics"],
-                pyqCount: 15,
-                completed: false
-              },
-              {
-                id: `ct-2-${Date.now()}`,
-                title: "Primary Domain Building Blocks",
-                estimatedHours: 24,
-                description: "The core algorithms and principles of this discipline.",
-                coreConcepts: ["Architecture Design", "Protocols", "Analysis"],
-                pyqCount: 20,
-                completed: false
-              }
-            ]
-          },
-          {
-            phaseNumber: 2,
-            phaseName: "Phase 2: Intermediate Implementation & Systems",
-            durationWeeks: 8,
-            objective: "Build end-to-end working systems and solve structured problem sets.",
-            topics: [
-              {
-                id: `ct-3-${Date.now()}`,
-                title: "Advanced Applied Systems",
-                estimatedHours: 28,
-                description: "Integrating multiple components under realistic operational constraints.",
-                coreConcepts: ["Optimization", "Reliability", "Testing"],
-                pyqCount: 25,
-                completed: false
-              }
-            ]
-          },
-          {
-            phaseNumber: 3,
-            phaseName: "Phase 3: Real-World Portfolio & Examination Mastery",
-            durationWeeks: 10,
-            objective: "Targeted competitive questions, peer-reviewed projects, and mock reviews.",
-            topics: [
-              {
-                id: `ct-4-${Date.now()}`,
-                title: "Capstone Deployment & Speed Drills",
-                estimatedHours: 35,
-                description: "Timed full-length mock scenarios and end-to-end portfolio review.",
-                coreConcepts: ["Time Management", "Error Reduction", "Edge Cases"],
-                pyqCount: 30,
-                completed: false
-              }
-            ]
-          }
-        ]
-      };
-      setActiveRoadmap(newRoadmap);
-      setCustomGoalInput("");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGeneratingRoadmap(false);
-    }
+
+  const handleAddTopicToPlanner = (topic, phaseTitle) => {
+    addDailySession({
+      title: `Phase Prep: ${topic.title}`,
+      subject: roadmap.examCategory,
+      topic: topic.title,
+      durationMinutes: 60,
+      sessionType: "Concept & Theory",
+      priority: topic.priority === "high" ? "high" : "medium"
+    });
+    showToast(`Added "${topic.title}" to Daily Planner!`, "success");
+    setActiveTab("planner");
   };
-  return <div className="space-y-4">
-      {
-    /* Sleek Compact Glass Header */
-  }
-      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl">
+
+  const handleGenerateCustomRoadmap = (e) => {
+    e.preventDefault();
+    if (!customGoalInput.trim()) return;
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      showToast(`Custom syllabus generated for: "${customGoalInput}"`, "success");
+      setCustomGoalInput("");
+    }, 900);
+  };
+
+  return (
+    <div className="space-y-6 text-white">
+      {/* Sleek Compact Glass Header */}
+      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Route className="w-5 h-5 text-indigo-600" />
-            <span className="tracking-tight">{activeRoadmap.title}</span>
+          <h1 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+            <GitFork className="w-5 h-5 text-amber-400" />
+            <span className="tracking-tight">{t("roadmap_banner_title")}</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {activeRoadmap.description}
+          <p className="text-xs text-slate-400 mt-0.5">
+            {t("roadmap_banner_desc")}
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 text-xs shrink-0">
-          <div className="bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/80 text-slate-700 shadow-2xs">
-            <span>{t("roadmap_duration_label")} </span>
-            <strong className="text-slate-900">{activeRoadmap.totalWeeks} {t("roadmap_weeks")}</strong>
-          </div>
-          <div className="bg-emerald-50/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-200/80 text-emerald-800 shadow-2xs">
-            <span>{t("roadmap_completion_label")} </span>
-            <strong className="font-bold">{progressPercent}%</strong>
-          </div>
-        </div>
-      </div>
-
-      {
-    /* Switch Roadmaps or Generate Custom Roadmap */
-  }
-      <div className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        {
-    /* Preset Selector */
-  }
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-700">Target Exam Pathways:</span>
-          {Object.values(ROADMAPS_DATABASE).map((r) => <button
-    key={r.id}
-    onClick={() => setActiveRoadmap(r)}
-    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeRoadmap.id === r.id ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-xs border border-white/20" : "bg-white/60 text-slate-700 hover:bg-white/90 border border-white/70"}`}
-  >
-              {r.title.replace(" Master Pathway", "").replace(" Master Preparation Roadmap", "").replace(" Pathway", "")}
-            </button>)}
-        </div>
-
-        {
-    /* Custom AI Roadmap Generator Input */
-  }
-        <div className="flex items-center space-x-2 w-full lg:w-auto">
-          <input
-    type="text"
-    value={customGoalInput}
-    onChange={(e) => setCustomGoalInput(e.target.value)}
-    placeholder="e.g. State PSC, NEET, JEE, Railway RRB, CLAT, Defense..."
-    className="text-xs px-3.5 py-2 rounded-xl glass-input w-full sm:w-72"
-  />
-          <button
-    onClick={handleGenerateCustomRoadmap}
-    disabled={isGeneratingRoadmap || !customGoalInput.trim()}
-    className="px-3.5 py-2 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold whitespace-nowrap shadow-xs border border-white/20 disabled:opacity-50 cursor-pointer flex items-center space-x-1"
-  >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Generate Roadmap</span>
-          </button>
-        </div>
-      </div>
-
-      {
-    /* Progress Bar */
-  }
-      <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs">
-        <div className="flex items-center justify-between text-xs mb-2">
-          <span className="font-bold text-slate-700">
-            Roadmap Completion: {completedTopicsCount} of {allTopics.length} Topics
+        {/* Target Indicator */}
+        <div className="flex items-center space-x-2 self-start sm:self-auto">
+          <span className="text-xs text-slate-400">Target Goal:</span>
+          <span className="text-xs font-bold bg-amber-500/10 text-amber-300 px-3 py-1 rounded-xl border border-amber-400/30 shadow-2xs">
+            {profile.targetGoal || roadmap.title}
           </span>
-          <span className="font-extrabold text-indigo-600">{progressPercent}%</span>
-        </div>
-        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-          <div
-    className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
-    style={{ width: `${progressPercent}%` }}
-  />
         </div>
       </div>
 
-      {
-    /* Multi-Phase Accordion */
-  }
+      {/* Progress & Architecture Banner */}
+      <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/70 backdrop-blur-xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-400/20 uppercase">
+                {roadmap.examCategory}
+              </span>
+              <span className="text-xs text-slate-400 flex items-center space-x-1">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                <span>{roadmap.estimatedTotalMonths} Months Full-Cycle Blueprint</span>
+              </span>
+            </div>
+            <h2 className="text-lg font-extrabold text-white mt-1">{roadmap.title}</h2>
+          </div>
+
+          <div className="text-left sm:text-right shrink-0">
+            <div className="text-xl sm:text-2xl font-black text-amber-400">
+              {progressPercent}% <span className="text-xs font-normal text-slate-400">Completed</span>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              {completedTopicsCount} of {totalTopics} high-yield topics mastered
+            </p>
+          </div>
+        </div>
+
+        {/* Progress Bar Track */}
+        <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-white/5">
+          <div
+            className="bg-gradient-to-r from-amber-400 to-amber-500 h-2.5 rounded-full transition-all duration-500 shadow-md shadow-amber-500/25"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Multi-Phase Accordion */}
       <div className="space-y-4">
-        {activeRoadmap.phases.map((phase) => {
-    const isExpanded = expandedPhases[phase.phaseNumber] ?? true;
-    const phaseDoneCount = phase.topics.filter((t2) => profile.completedTopicIds.includes(t2.id)).length;
-    const isPhaseDone = phaseDoneCount === phase.topics.length && phase.topics.length > 0;
-    return <div
-      key={phase.phaseNumber}
-      className={`glass-card rounded-2xl transition-all ${isPhaseDone ? "border-emerald-300/80 bg-emerald-50/40 shadow-xs" : "hover:border-white shadow-xs"}`}
-    >
-              {
-      /* Phase Header */
-    }
+        {roadmap.phases.map((phase, pIdx) => {
+          const isExpanded = !!expandedPhases[pIdx];
+          const phaseCompletedCount = phase.topics.filter((t) => profile.completedTopicIds.includes(t.id)).length;
+          const isPhaseDone = phaseCompletedCount === phase.topics.length && phase.topics.length > 0;
+
+          return (
+            <div
+              key={phase.phaseNumber}
+              className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-xl bg-slate-900/60 backdrop-blur-xl transition-all"
+            >
+              {/* Phase Header */}
               <div
-      onClick={() => togglePhase(phase.phaseNumber)}
-      className="p-5 flex items-center justify-between cursor-pointer select-none"
-    >
-                <div className="flex items-center space-x-3.5">
+                onClick={() => togglePhase(pIdx)}
+                className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors select-none"
+              >
+                <div className="flex items-center space-x-3 sm:space-x-4">
                   <div
-      className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${isPhaseDone ? "bg-emerald-500 text-white" : "bg-indigo-100 text-indigo-700"}`}
-    >
-                    {isPhaseDone ? <CheckCircle2 className="w-5 h-5" /> : `P${phase.phaseNumber}`}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-md ${
+                      isPhaseDone
+                        ? "bg-emerald-500 text-slate-950"
+                        : "bg-gradient-to-tr from-amber-400 to-amber-600 text-slate-950 font-bold"
+                    }`}
+                  >
+                    {isPhaseDone ? "✓" : `P${phase.phaseNumber}`}
                   </div>
 
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-sm font-bold text-slate-900">{phase.phaseName}</h3>
-                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      <h3 className="text-sm sm:text-base font-bold text-white">{phase.title}</h3>
+                      <span className="hidden xs:inline text-[10px] font-semibold text-slate-400 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
                         {phase.durationWeeks} Weeks
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{phase.objective}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{phase.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  <span className="text-xs font-semibold text-slate-600">
-                    {phaseDoneCount} / {phase.topics.length} done
+                  <span className="text-xs font-semibold text-slate-400 hidden sm:inline">
+                    {phaseCompletedCount}/{phase.topics.length} Topics
                   </span>
-                  {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  <div className="p-1 rounded-lg text-slate-400 hover:text-white">
+                    {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  </div>
                 </div>
               </div>
 
-              {
-      /* Topics List */
-    }
-              {isExpanded && <div className="px-5 pb-5 pt-1 space-y-3 border-t border-slate-100">
-                  {phase.topics.map((topic) => {
-      const isCompleted = profile.completedTopicIds.includes(topic.id);
-      return <div
-        key={topic.id}
-        className={`p-4 rounded-xl border transition-all ${isCompleted ? "bg-slate-50/60 border-slate-200 text-slate-400" : "bg-white border-slate-200/90 text-slate-900 hover:border-indigo-300 shadow-2xs"}`}
-      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start space-x-3">
-                            <button
-        onClick={() => handleToggleTopic(topic)}
-        className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center transition-colors cursor-pointer ${isCompleted ? "bg-emerald-500 text-white" : "border-2 border-slate-300 hover:border-indigo-600"}`}
-      >
-                              {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
-                            </button>
-
-                            <div className="space-y-1">
-                              <div className="flex items-center space-x-2">
-                                <h4
-        className={`text-xs font-bold ${isCompleted ? "line-through text-slate-400" : "text-slate-900"}`}
-      >
-                                  {topic.title}
-                                </h4>
-                                <span className="text-[10px] text-slate-500 flex items-center space-x-1">
-                                  <Clock className="w-3 h-3 text-slate-400" />
-                                  <span>{topic.estimatedHours} hrs</span>
+              {/* Topics Body */}
+              {isExpanded && (
+                <div className="p-4 sm:p-5 pt-0 border-t border-white/10 bg-slate-950/40 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
+                    {phase.topics.map((topic) => {
+                      const isCompleted = profile.completedTopicIds.includes(topic.id);
+                      return (
+                        <div
+                          key={topic.id}
+                          className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
+                            isCompleted
+                              ? "bg-slate-950/60 border-white/5 opacity-70"
+                              : "bg-slate-900/80 border-white/10 hover:border-amber-400/40 shadow-xs"
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <button
+                                onClick={() => handleToggleTopic(topic.id)}
+                                className={`flex items-center space-x-2 text-left cursor-pointer group`}
+                              >
+                                <span
+                                  className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors shrink-0 ${
+                                    isCompleted
+                                      ? "bg-emerald-500 text-slate-950 font-black"
+                                      : "border-2 border-slate-600 group-hover:border-amber-400"
+                                  }`}
+                                >
+                                  {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
                                 </span>
-                              </div>
+                                <span
+                                  className={`text-xs font-bold ${
+                                    isCompleted ? "line-through text-slate-500" : "text-white group-hover:text-amber-300"
+                                  }`}
+                                >
+                                  {topic.title}
+                                </span>
+                              </button>
 
-                              <p className="text-xs text-slate-600 leading-relaxed">
-                                {topic.description}
-                              </p>
+                              <span
+                                className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                                  topic.priority === "high"
+                                    ? "bg-rose-500/15 text-rose-300 border border-rose-500/30"
+                                    : "bg-amber-500/15 text-amber-300 border border-amber-400/30"
+                                }`}
+                              >
+                                {topic.priority} Yield
+                              </span>
+                            </div>
 
-                              {
-        /* Core Concept Tags */
-      }
-                              <div className="flex flex-wrap gap-1 pt-1">
-                                {topic.coreConcepts.map((cc, cIdx) => <span
-        key={cIdx}
-        className="text-[10px] bg-indigo-50/70 text-indigo-700 px-1.5 py-0.5 rounded font-medium border border-indigo-100"
-      >
-                                    {cc}
-                                  </span>)}
-                              </div>
+                            <p className="text-[11px] text-slate-400 pl-7 leading-relaxed mb-3">
+                              {topic.coreCompetency}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-white/10 pl-7 text-[10px]">
+                            <span className="text-slate-400 font-medium">Est. {topic.estimatedHours} Hours</span>
+
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleAddTopicToPlanner(topic, phase.title)}
+                                className="text-amber-400 hover:text-amber-300 font-bold flex items-center space-x-1 cursor-pointer"
+                                title="Add to Daily Planner"
+                              >
+                                <CalendarCheck className="w-3 h-3" />
+                                <span>+ Planner</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  showToast(`Filter questions for "${topic.title}" in practice!`, "info");
+                                  setActiveTab("practice");
+                                }}
+                                className="text-slate-300 hover:text-white font-bold flex items-center space-x-1 cursor-pointer"
+                              >
+                                <Target className="w-3 h-3" />
+                                <span>Practice</span>
+                              </button>
                             </div>
                           </div>
-
-                          {
-        /* Action Buttons on Right */
-      }
-                          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
-                            {
-        /* Skip / Fast Forward Button */
-      }
-                            {!isCompleted && <button
-        onClick={() => handleToggleTopic(topic)}
-        className="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-700 px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 transition-colors cursor-pointer"
-        title="Already know this? Skip repetition and mark completed!"
-      >
-                                <FastForward className="w-3 h-3" />
-                                <span>I already know this</span>
-                              </button>}
-
-                            {
-        /* Open Free Resource */
-      }
-                            <button
-        onClick={() => setActiveTab("resources")}
-        className="inline-flex items-center space-x-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 px-2.5 py-1 rounded-lg bg-indigo-50/80 hover:bg-indigo-100/80 border border-indigo-200 transition-colors cursor-pointer"
-      >
-                              <BookOpen className="w-3 h-3" />
-                              <span>Free Lecture</span>
-                            </button>
-
-                            {
-        /* PYQ Count Badge */
-      }
-                            <button
-        onClick={() => setActiveTab("practice")}
-        className="inline-flex items-center space-x-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
-      >
-                              <HelpCircle className="w-3 h-3 text-emerald-600" />
-                              <span>{topic.pyqCount} PYQs</span>
-                            </button>
-                          </div>
                         </div>
-                      </div>;
-    })}
-                </div>}
-            </div>;
-  })}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-    </div>;
+
+      {/* AI Custom Roadmap Generator Card */}
+      <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/70 backdrop-blur-xl shadow-xl space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-white">
+              Generate Tailored Syllabus Roadmap
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              Need a roadmap for a specific niche exam or specialization? Type it below to generate a phase-wise curriculum.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleGenerateCustomRoadmap} className="flex flex-col sm:flex-row gap-2 pt-1">
+          <input
+            type="text"
+            value={customGoalInput}
+            onChange={(e) => setCustomGoalInput(e.target.value)}
+            placeholder="e.g. RBI Grade B Legal Officer or ISRO Scientist SC (CS)"
+            className="flex-1 px-3 py-2 text-xs rounded-xl border border-white/15 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+          <button
+            type="submit"
+            disabled={isGenerating || !customGoalInput.trim()}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isGenerating ? "Synthesizing Syllabus..." : "Generate AI Roadmap →"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 };
-export {
-  RoadmapView
-};
+
+export { RoadmapView };

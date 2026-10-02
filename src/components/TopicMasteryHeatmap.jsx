@@ -20,15 +20,20 @@ import {
   Zap,
   TrendingUp
 } from "lucide-react";
+
 const TopicMasteryHeatmap = () => {
   const { profile, setActiveTab, showToast } = useApp();
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [hoveredTopic, setHoveredTopic] = useState(null);
+
   const masteryData = useMemo(() => {
     const isWeakInPolity = (profile.weakTopics || []).some((t) => t.toLowerCase().includes("polity"));
-    const isWeakInQuant = (profile.weakTopics || []).some((t) => t.toLowerCase().includes("quant") || t.toLowerCase().includes("interpretation"));
+    const isWeakInQuant = (profile.weakTopics || []).some(
+      (t) => t.toLowerCase().includes("quant") || t.toLowerCase().includes("interpretation")
+    );
     const isWeakInReasoning = (profile.weakTopics || []).some((t) => t.toLowerCase().includes("reasoning"));
+
     return [
       {
         subject: "Modern Indian History",
@@ -38,7 +43,6 @@ const TopicMasteryHeatmap = () => {
         questionsTested: 42,
         status: "strength",
         color: "#10b981",
-        // emerald
         subtopics: [
           { name: "1857 Revolt & British Expansion", score: 94, status: "strength", lastTested: "2 days ago" },
           { name: "Socio-Religious Reform Movements", score: 88, status: "strength", lastTested: "4 days ago" },
@@ -54,123 +58,93 @@ const TopicMasteryHeatmap = () => {
         questionsTested: 35,
         status: "strength",
         color: "#14b8a6",
-        // teal
         subtopics: [
           { name: "ISRO Space Missions & Launchers", score: 92, status: "strength", lastTested: "3 days ago" },
           { name: "Biotechnology & Vaccines", score: 85, status: "strength", lastTested: "5 days ago" },
-          { name: "AI, Quantum & Semiconductor Tech", score: 80, status: "strength", lastTested: "1 day ago" },
-          { name: "Public Health, Nutrition & Immunology", score: 79, status: "moderate", lastTested: "6 days ago" }
+          { name: "Artificial Intelligence & Semiconductors", score: 80, status: "strength", lastTested: "1 week ago" },
+          { name: "Renewable Energy & Green Hydrogen", score: 78, status: "moderate", lastTested: "6 days ago" }
         ]
       },
       {
-        subject: "Environment & Ecology",
-        shortSubject: "Environment",
-        masteryScore: 81,
-        accuracy: 83,
-        questionsTested: 31,
-        status: "strength",
-        color: "#06b6d4",
-        // cyan
-        subtopics: [
-          { name: "Biodiversity Hotspots & Biospheres", score: 88, status: "strength", lastTested: "4 days ago" },
-          { name: "UNFCCC & International Treaties", score: 82, status: "strength", lastTested: "Yesterday" },
-          { name: "Renewable Energy & Carbon Credits", score: 78, status: "moderate", lastTested: "5 days ago" },
-          { name: "Pollution Control & Waste Management Rules", score: 76, status: "moderate", lastTested: "1 week ago" }
-        ]
-      },
-      {
-        subject: "Indian Economy & Macroeconomics",
-        shortSubject: "Economy",
-        masteryScore: 73,
-        accuracy: 75,
+        subject: "Physical & Economic Geography",
+        shortSubject: "Geography",
+        masteryScore: 78,
+        accuracy: 81,
         questionsTested: 38,
         status: "moderate",
-        color: "#6366f1",
-        // indigo
+        color: "#06b6d4",
         subtopics: [
-          { name: "RBI Monetary Policy & Repo Rates", score: 84, status: "strength", lastTested: "2 days ago" },
-          { name: "Fiscal Deficit & Union Budget System", score: 74, status: "moderate", lastTested: "4 days ago" },
-          { name: "Inflation Indices (CPI vs WPI)", score: 71, status: "moderate", lastTested: "Yesterday" },
-          { name: "Balance of Payments & Forex Reserves", score: 63, status: "moderate", lastTested: "3 days ago" }
+          { name: "Indian River Systems & Tributaries", score: 86, status: "strength", lastTested: "2 days ago" },
+          { name: "Monsoon Mechanism & Western Disturbances", score: 82, status: "strength", lastTested: "4 days ago" },
+          { name: "Plate Tectonics & Seismic Zones", score: 74, status: "moderate", lastTested: "1 week ago" },
+          { name: "Mineral Resources & Industrial Belts", score: 68, status: "moderate", lastTested: "5 days ago" }
         ]
       },
       {
-        subject: "Current Affairs & Schemes",
-        shortSubject: "Current Affairs",
-        masteryScore: 70,
-        accuracy: 72,
+        subject: "Environment, Ecology & Climate",
+        shortSubject: "Environment",
+        masteryScore: 72,
+        accuracy: 74,
         questionsTested: 29,
         status: "moderate",
-        color: "#8b5cf6",
-        // purple
+        color: "#f59e0b",
         subtopics: [
-          { name: "Key Central Welfare Schemes (DBT)", score: 78, status: "moderate", lastTested: "Today" },
-          { name: "Multilateral Summits (G20, SCO, BRICS)", score: 74, status: "moderate", lastTested: "2 days ago" },
-          { name: "Supreme Court Landmark Rulings 2026", score: 68, status: "moderate", lastTested: "3 days ago" },
-          { name: "Defense Exercises & Bilateral Treaties", score: 60, status: "moderate", lastTested: "4 days ago" }
+          { name: "National Parks, Biospheres & Ramsar Sites", score: 80, status: "strength", lastTested: "3 days ago" },
+          { name: "IUCN Red List & Endemic Species", score: 73, status: "moderate", lastTested: "5 days ago" },
+          { name: "COP Summits & Montreal Protocol", score: 71, status: "moderate", lastTested: "1 week ago" },
+          { name: "Pollution Norms & Environmental Acts", score: 64, status: "moderate", lastTested: "4 days ago" }
         ]
       },
       {
-        subject: "Indian Polity & Governance",
-        shortSubject: "Indian Polity",
-        masteryScore: isWeakInPolity ? 59 : 76,
-        accuracy: isWeakInPolity ? 61 : 78,
-        questionsTested: 48,
-        status: isWeakInPolity ? "weakness" : "moderate",
-        color: isWeakInPolity ? "#f59e0b" : "#6366f1",
-        // amber / warning
-        subtopics: [
-          { name: "Preamble & Fundamental Rights (Art 14-32)", score: 66, status: "moderate", lastTested: "Today" },
-          { name: "Judicial Appointments & Review Powers", score: 58, status: "weakness", lastTested: "Yesterday" },
-          { name: "Parliamentary Procedures & Money Bills", score: 56, status: "weakness", lastTested: "2 days ago" },
-          { name: "Constitutional Bodies (Election Comm, CAG)", score: 54, status: "weakness", lastTested: "3 days ago" }
-        ]
-      },
-      {
-        subject: "General Intelligence & Reasoning",
+        subject: "Logical Reasoning & Analytical Logic",
         shortSubject: "Reasoning",
-        masteryScore: isWeakInReasoning ? 54 : 74,
-        accuracy: isWeakInReasoning ? 57 : 76,
-        questionsTested: 36,
+        masteryScore: isWeakInReasoning ? 54 : 68,
+        accuracy: isWeakInReasoning ? 56 : 70,
+        questionsTested: 26,
         status: isWeakInReasoning ? "weakness" : "moderate",
-        color: isWeakInReasoning ? "#f97316" : "#6366f1",
-        // orange
+        color: isWeakInReasoning ? "#f43f5e" : "#fbbf24",
         subtopics: [
-          { name: "Syllogisms & Venn Diagram Deductions", score: 65, status: "moderate", lastTested: "Yesterday" },
-          { name: "Seating Arrangements & Complex Puzzles", score: 52, status: "weakness", lastTested: "Today" },
-          { name: "Statement & Assumptions / Arguments", score: 51, status: "weakness", lastTested: "3 days ago" },
-          { name: "Data Sufficiency & Analytical Reasoning", score: 48, status: "weakness", lastTested: "4 days ago" }
+          { name: "Syllogisms & Venn Diagrams", score: isWeakInReasoning ? 58 : 74, status: isWeakInReasoning ? "weakness" : "moderate", lastTested: "Yesterday" },
+          { name: "Blood Relations & Coded Symbols", score: isWeakInReasoning ? 52 : 68, status: isWeakInReasoning ? "weakness" : "moderate", lastTested: "3 days ago" },
+          { name: "Seating Arrangements (Circular/Linear)", score: isWeakInReasoning ? 48 : 62, status: "weakness", lastTested: "2 days ago" },
+          { name: "Data Sufficiency & Statement Logic", score: isWeakInReasoning ? 56 : 70, status: isWeakInReasoning ? "weakness" : "moderate", lastTested: "5 days ago" }
         ]
       },
       {
-        subject: "Quantitative Aptitude & Data",
-        shortSubject: "Quant & DI",
-        masteryScore: isWeakInQuant ? 46 : 68,
-        accuracy: isWeakInQuant ? 49 : 71,
-        questionsTested: 50,
-        status: isWeakInQuant ? "weakness" : "moderate",
-        color: isWeakInQuant ? "#ef4444" : "#6366f1",
-        // red / urgent remedial
+        subject: "Quantitative Aptitude & Data Interpretation",
+        shortSubject: "Quantitative Apt",
+        masteryScore: isWeakInQuant ? 46 : 58,
+        accuracy: isWeakInQuant ? 48 : 60,
+        questionsTested: 32,
+        status: "weakness",
+        color: "#ef4444",
         subtopics: [
-          { name: "Percentages, Profit & Loss Equations", score: 54, status: "weakness", lastTested: "Today" },
-          { name: "Time, Speed, Distance & Relative Motion", score: 45, status: "weakness", lastTested: "Yesterday" },
-          { name: "Permutations, Combinations & Probability", score: 42, status: "weakness", lastTested: "2 days ago" },
-          { name: "Data Interpretation Charts & Mixed Tables", score: 41, status: "weakness", lastTested: "Today" }
+          { name: "Permutations, Combinations & Probability", score: isWeakInQuant ? 38 : 50, status: "weakness", lastTested: "Yesterday" },
+          { name: "Time, Speed, Distance & Rel. Velocity", score: isWeakInQuant ? 44 : 56, status: "weakness", lastTested: "2 days ago" },
+          { name: "Data Interpretation (Multi-tier Bar/Radar)", score: isWeakInQuant ? 49 : 62, status: "weakness", lastTested: "3 days ago" },
+          { name: "Number Systems & Modular Arithmetic", score: isWeakInQuant ? 54 : 64, status: "weakness", lastTested: "4 days ago" }
+        ]
+      },
+      {
+        subject: "Indian Polity & Constitutional Framework",
+        shortSubject: "Indian Polity",
+        masteryScore: isWeakInPolity ? 48 : 62,
+        accuracy: isWeakInPolity ? 50 : 65,
+        questionsTested: 45,
+        status: isWeakInPolity ? "weakness" : "moderate",
+        color: isWeakInPolity ? "#e11d48" : "#f59e0b",
+        subtopics: [
+          { name: "Parliamentary Committees & Sessions", score: isWeakInPolity ? 42 : 58, status: "weakness", lastTested: "Yesterday" },
+          { name: "Emergency Provisions & Judicial Review", score: isWeakInPolity ? 46 : 60, status: "weakness", lastTested: "2 days ago" },
+          { name: "Fundamental Rights & Writ Jurisdiction", score: isWeakInPolity ? 56 : 72, status: isWeakInPolity ? "weakness" : "moderate", lastTested: "4 days ago" },
+          { name: "Panchayati Raj & 73rd/74th Amendments", score: isWeakInPolity ? 49 : 64, status: "weakness", lastTested: "3 days ago" }
         ]
       }
     ];
   }, [profile.weakTopics]);
-  const totalSubtopics = useMemo(() => {
-    return masteryData.flatMap((s) => s.subtopics);
-  }, [masteryData]);
-  const strengthsCount = totalSubtopics.filter((t) => t.score >= 75).length;
-  const moderateCount = totalSubtopics.filter((t) => t.score >= 60 && t.score < 75).length;
-  const weaknessesCount = totalSubtopics.filter((t) => t.score < 60).length;
-  const averageMastery = Math.round(
-    masteryData.reduce((acc, s) => acc + s.masteryScore, 0) / (masteryData.length || 1)
-  );
-  const filteredChartData = useMemo(() => {
-    let list = [...masteryData];
+
+  const filteredMasteryData = useMemo(() => {
+    let list = masteryData;
     if (selectedSubject !== "all") {
       list = list.filter((s) => s.subject === selectedSubject);
     }
@@ -183,6 +157,7 @@ const TopicMasteryHeatmap = () => {
     }
     return list;
   }, [masteryData, selectedSubject, activeFilter]);
+
   const matrixSubtopics = useMemo(() => {
     let list = [];
     masteryData.forEach((s) => {
@@ -202,385 +177,301 @@ const TopicMasteryHeatmap = () => {
     });
     return list.sort((a, b) => a.score - b.score);
   }, [masteryData, selectedSubject, activeFilter]);
-  const getHeatmapColorClass = (score) => {
-    if (score >= 85) return "bg-emerald-500 text-white border-emerald-600";
-    if (score >= 75) return "bg-emerald-400 text-white border-emerald-500";
-    if (score >= 65) return "bg-cyan-500 text-white border-cyan-600";
-    if (score >= 60) return "bg-amber-400 text-amber-950 border-amber-500";
-    if (score >= 50) return "bg-orange-500 text-white border-orange-600";
-    return "bg-rose-500 text-white border-rose-600 animate-pulse";
-  };
-  const getHeatmapBgClass = (score) => {
-    if (score >= 80) return "bg-emerald-50/90 border-emerald-200 text-emerald-950 hover:border-emerald-400";
-    if (score >= 65) return "bg-cyan-50/90 border-cyan-200 text-cyan-950 hover:border-cyan-400";
-    if (score >= 55) return "bg-amber-50/90 border-amber-200 text-amber-950 hover:border-amber-400";
-    return "bg-rose-50/90 border-rose-200 text-rose-950 hover:border-rose-400";
-  };
+
   const CustomBarTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      return <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-xl text-xs space-y-1.5 min-w-[220px]">
-          <div className="font-bold text-slate-900 border-b border-slate-100 pb-1 flex items-center justify-between">
+      return (
+        <div className="bg-slate-950/95 backdrop-blur-xl p-3.5 rounded-2xl border border-white/15 shadow-2xl text-xs space-y-1.5 min-w-[220px] text-white">
+          <div className="font-bold text-white border-b border-white/10 pb-1 flex items-center justify-between">
             <span>{data.subject}</span>
             <span
-        className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full ${data.status === "strength" ? "bg-emerald-100 text-emerald-800" : data.status === "moderate" ? "bg-blue-100 text-blue-800" : "bg-rose-100 text-rose-800"}`}
-      >
+              className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full ${
+                data.status === "strength"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : data.status === "moderate"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-400/30"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+              }`}
+            >
               {data.status.toUpperCase()}
             </span>
           </div>
           <div className="space-y-1 pt-1">
-            <div className="flex justify-between items-center text-slate-700">
+            <div className="flex justify-between items-center text-slate-300">
               <span>Mastery Index:</span>
-              <span className="font-bold font-mono text-sm text-indigo-700">{data.masteryScore}%</span>
+              <span className="font-bold font-mono text-sm text-amber-400">{data.masteryScore}%</span>
             </div>
-            <div className="flex justify-between items-center text-slate-600">
+            <div className="flex justify-between items-center text-slate-400">
               <span>Historical Accuracy:</span>
-              <span className="font-bold font-mono">{data.accuracy}%</span>
+              <span className="font-bold font-mono text-white">{data.accuracy}%</span>
             </div>
-            <div className="flex justify-between items-center text-slate-600">
-              <span>Questions Evaluated:</span>
-              <span className="font-mono">{data.questionsTested} PYQs</span>
+            <div className="flex justify-between items-center text-slate-400">
+              <span>Questions Solved:</span>
+              <span className="font-bold text-white">{data.questionsTested} items</span>
             </div>
           </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-500">
-            {data.status === "weakness" ? "\u26A0\uFE0F Recommended: Prioritize remedial PYQs & conceptual drills." : data.status === "strength" ? "\u2705 High Retention: Maintain mastery with periodic spaced quizzes." : "\u26A1 On Track: Convert to strength with timed mock test practice."}
-          </div>
-        </div>;
+        </div>
+      );
     }
     return null;
   };
-  const handlePracticeTopic = (topicName) => {
-    showToast(`Launching remedial drill for: ${topicName}`, "info");
-    setActiveTab("practice");
-  };
-  return <div className="glass-card rounded-2xl p-5 sm:p-6 space-y-6 border border-white/80 shadow-sm relative overflow-hidden">
-      {
-    /* Background Accent */
-  }
-      <div className="absolute top-0 right-0 w-80 h-80 bg-linear-to-bl from-indigo-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-      {
-    /* Header with Title & Filter Tabs */
-  }
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100/80 pb-4 relative z-10">
-        <div>
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-linear-to-tr from-indigo-600 to-rose-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-                <span>Topic Mastery Heatmap</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  {averageMastery}% Overall Index
-                </span>
-              </h2>
-            </div>
+  return (
+    <div className="space-y-6">
+      {/* Sleek Obsidian Glass Header */}
+      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl text-white">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/30 flex items-center justify-center font-bold">
+            <Layers className="w-4 h-4 text-amber-400" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Visual breakdown of syllabus competency. Identifies high-yield strength zones and critical weakness areas requiring remedial focus.
-          </p>
+          <div>
+            <h1 className="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
+              <span>Adaptive Topic Mastery Heatmap</span>
+            </h1>
+            <p className="text-[11px] text-slate-400">
+              Diagnostic multi-axis retention matrix highlighting high-yield weak spots and ranker strengths
+            </p>
+          </div>
         </div>
 
-        {
-    /* Filter Controls */
-  }
-        <div className="flex flex-wrap items-center gap-2">
-          {
-    /* Status Filter Tabs */
-  }
-          <div className="flex items-center rounded-xl border border-slate-200/80 p-0.5 bg-slate-50/80 text-[11px] font-semibold">
-            <button
-    onClick={() => setActiveFilter("all")}
-    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${activeFilter === "all" ? "bg-white text-indigo-700 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-  >
-              All Topics ({totalSubtopics.length})
-            </button>
-            <button
-    onClick={() => setActiveFilter("strengths")}
-    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${activeFilter === "strengths" ? "bg-white text-emerald-700 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-  >
-              Strengths ({strengthsCount})
-            </button>
-            <button
-    onClick={() => setActiveFilter("moderate")}
-    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${activeFilter === "moderate" ? "bg-white text-cyan-700 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-  >
-              Developing ({moderateCount})
-            </button>
-            <button
-    onClick={() => setActiveFilter("weaknesses")}
-    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${activeFilter === "weaknesses" ? "bg-white text-rose-700 font-bold shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-  >
-              Weak Areas ({weaknessesCount})
-            </button>
-          </div>
-
-          {
-    /* Subject Filter Dropdown */
-  }
-          <select
-    value={selectedSubject}
-    onChange={(e) => setSelectedSubject(e.target.value)}
-    className="text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-slate-200/80 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-2xs"
-  >
-            <option value="all">All Subjects</option>
-            {masteryData.map((s) => <option key={s.subject} value={s.subject}>
-                {s.shortSubject}
-              </option>)}
-          </select>
+        {/* Filter Pills */}
+        <div className="flex items-center space-x-1.5 bg-slate-950/60 p-1 rounded-xl border border-white/10 text-xs font-semibold">
+          <button
+            onClick={() => setActiveFilter("all")}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeFilter === "all"
+                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-xs"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            All Topics
+          </button>
+          <button
+            onClick={() => setActiveFilter("weaknesses")}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeFilter === "weaknesses"
+                ? "bg-rose-500 text-white font-bold shadow-xs"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Weaknesses
+          </button>
+          <button
+            onClick={() => setActiveFilter("moderate")}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeFilter === "moderate"
+                ? "bg-amber-500 text-slate-950 font-bold shadow-xs"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Moderate
+          </button>
+          <button
+            onClick={() => setActiveFilter("strengths")}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              activeFilter === "strengths"
+                ? "bg-emerald-500 text-slate-950 font-black shadow-xs"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Strengths
+          </button>
         </div>
       </div>
 
-      {
-    /* KPI Diagnosis Strip */
-  }
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
-        <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
+      {/* High-Level Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-slate-900/70 border border-emerald-400/30 flex items-center justify-between shadow-lg">
           <div>
-            <div className="text-lg sm:text-xl font-extrabold text-emerald-950 font-mono">
-              {strengthsCount} <span className="text-xs font-normal text-slate-500">topics</span>
-            </div>
-            <div className="text-[11px] font-bold text-emerald-800">Mastered Strengths (≥75%)</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-2xl bg-cyan-50/70 border border-cyan-100 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-700 flex items-center justify-center shrink-0">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-lg sm:text-xl font-extrabold text-cyan-950 font-mono">
-              {moderateCount} <span className="text-xs font-normal text-slate-500">topics</span>
-            </div>
-            <div className="text-[11px] font-bold text-cyan-800">Developing Competencies (60-74%)</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-2xl bg-rose-50/70 border border-rose-100 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-700 flex items-center justify-center shrink-0">
-            <ShieldAlert className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-lg sm:text-xl font-extrabold text-rose-950 font-mono">
-              {weaknessesCount} <span className="text-xs font-normal text-slate-500">topics</span>
-            </div>
-            <div className="text-[11px] font-bold text-rose-800">Weakness Alerts (&lt;60%)</div>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-700 flex items-center justify-center shrink-0">
-            <Zap className="w-5 h-5 text-indigo-600" />
-          </div>
-          <div>
-            <div className="text-lg sm:text-xl font-extrabold text-indigo-950 font-mono">
-              {averageMastery}%
-            </div>
-            <div className="text-[11px] font-bold text-indigo-800">Avg Exam Preparedness</div>
-          </div>
-        </div>
-      </div>
-
-      {
-    /* Main Charts & Visualizations */
-  }
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-        {
-    /* Recharts Bar Chart: Subject Competency Heatmap Spectrum */
-  }
-        <div className="lg:col-span-6 rounded-2xl p-4 sm:p-5 bg-white border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center space-x-2">
-                <Layers className="w-4 h-4 text-indigo-600" />
-                <span>Subject Mastery Spectrum (Recharts)</span>
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                Aggregated mastery indices across core subjects against 65% target cutoff.
-              </p>
-            </div>
-
-            <button
-    onClick={() => setActiveTab("practice")}
-    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1 cursor-pointer"
-  >
-              <span>Solve PYQs</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="h-72 w-full pt-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-    data={filteredChartData}
-    layout="vertical"
-    margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
-  >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-
-                <XAxis
-    type="number"
-    domain={[0, 100]}
-    tick={{ fill: "#64748b", fontSize: 11 }}
-    axisLine={{ stroke: "#e2e8f0" }}
-    tickLine={false}
-    tickFormatter={(val) => `${val}%`}
-  />
-
-                <YAxis
-    type="category"
-    dataKey="shortSubject"
-    tick={{ fill: "#334155", fontSize: 11, fontWeight: 500 }}
-    axisLine={{ stroke: "#e2e8f0" }}
-    tickLine={false}
-    width={110}
-  />
-
-                <Tooltip content={<CustomBarTooltip />} />
-
-                {
-    /* Benchmark Lines */
-  }
-                <ReferenceLine
-    x={65}
-    stroke="#f59e0b"
-    strokeDasharray="4 4"
-    label={{
-      value: "Cutoff 65%",
-      fill: "#b45309",
-      fontSize: 10,
-      position: "top"
-    }}
-  />
-
-                <ReferenceLine
-    x={80}
-    stroke="#10b981"
-    strokeDasharray="3 3"
-    label={{
-      value: "Strength 80%",
-      fill: "#059669",
-      fontSize: 10,
-      position: "top"
-    }}
-  />
-
-                <Bar dataKey="masteryScore" radius={[0, 6, 6, 0]}>
-                  {filteredChartData.map((entry, index) => <Cell key={`bar-${index}`} fill={entry.color} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {
-    /* Color Legend */
-  }
-          <div className="flex flex-wrap items-center justify-between text-[11px] pt-2 border-t border-slate-100">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-slate-600">≥80% Strength</span>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-                <span className="text-slate-600">65-79% Competent</span>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="text-slate-600">55-64% Attention</span>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                <span className="text-slate-600">&lt;55% Weakness</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {
-    /* Matrix Heatmap Grid: Subtopic Granular Cell Matrix */
-  }
-        <div className="lg:col-span-6 rounded-2xl p-4 sm:p-5 bg-white border border-slate-200/80 shadow-2xs space-y-3 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center space-x-2">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <span>Subtopic Diagnostic Matrix</span>
-                </h3>
-                <p className="text-[11px] text-slate-500">
-                  Granular heat cells mapped by retention and question accuracy. Click to launch remedial drill.
-                </p>
-              </div>
-
-              <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                {matrixSubtopics.length} Subtopics
-              </span>
-            </div>
-
-            {
-    /* Matrix Heat Cells */
-  }
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-64 sm:max-h-72 overflow-y-auto pr-1">
-              {matrixSubtopics.map((item, idx) => <div
-    key={idx}
-    onClick={() => handlePracticeTopic(item.topic)}
-    onMouseEnter={() => setHoveredTopic(item)}
-    onMouseLeave={() => setHoveredTopic(null)}
-    className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${getHeatmapBgClass(
-      item.score
-    )}`}
-  >
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-semibold text-slate-500 truncate">
-                      {item.subject.split("&")[0]}
-                    </div>
-                    <div className="text-xs font-bold text-slate-900 truncate mt-0.5">
-                      {item.topic}
-                    </div>
-                    <div className="text-[9px] text-slate-400 mt-0.5">
-                      Tested {item.lastTested}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end shrink-0">
-                    <span
-    className={`text-xs font-black font-mono px-2 py-0.5 rounded-lg border shadow-2xs ${getHeatmapColorClass(
-      item.score
-    )}`}
-  >
-                      {item.score}%
-                    </span>
-                    <span className="text-[9px] font-semibold text-slate-500 mt-1 capitalize">
-                      {item.status}
-                    </span>
-                  </div>
-                </div>)}
-            </div>
-          </div>
-
-          {
-    /* Quick Guidance Footer */
-  }
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
-            <span className="text-[11px]">
-              💡 <strong>Action Insight:</strong> Focus on red cells to eliminate negative marking risks in prelims.
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+              Mastered Domains (≥ 75%)
             </span>
-            <button
-    onClick={() => setActiveTab("practice")}
-    className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer shrink-0 ml-2"
-  >
-              Start Drill
-            </button>
+            <div className="text-2xl font-black text-emerald-400 mt-0.5">
+              {masteryData.filter((s) => s.status === "strength").length} Subjects
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">High retention; maintain with periodic flash drills</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/70 border border-amber-400/30 flex items-center justify-between shadow-lg">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+              Consolidation Zone (60-74%)
+            </span>
+            <div className="text-2xl font-black text-amber-300 mt-0.5">
+              {masteryData.filter((s) => s.status === "moderate").length} Subjects
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">Requires 1-2 focused PYQ sessions to convert to strength</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/30 flex items-center justify-center font-bold">
+            <Zap className="w-5 h-5 text-amber-400" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/70 border border-rose-400/30 flex items-center justify-between shadow-lg">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+              Remediation Critical (&lt; 60%)
+            </span>
+            <div className="text-2xl font-black text-rose-400 mt-0.5">
+              {masteryData.filter((s) => s.status === "weakness").length} Subjects
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">High negative marking risk in actual exam simulations</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold">
+            <ShieldAlert className="w-5 h-5 text-rose-400" />
           </div>
         </div>
       </div>
-    </div>;
+
+      {/* Main Bar Chart of Mastery by Subject */}
+      <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-white flex items-center space-x-1.5">
+              <TrendingUp className="w-4 h-4 text-amber-400" />
+              <span>Diagnostic Mastery Index by Core Exam Syllabus Subject</span>
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Derived from weighted performance across adaptive drill sessions and timed mock tests
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2 text-[10px]">
+            <span className="flex items-center space-x-1 text-slate-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+              <span>≥ 75% Strength</span>
+            </span>
+            <span className="flex items-center space-x-1 text-slate-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <span>60-74% Moderate</span>
+            </span>
+            <span className="flex items-center space-x-1 text-slate-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              <span>&lt; 60% Weak</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={filteredMasteryData} margin={{ top: 15, right: 10, left: -20, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" />
+              <XAxis
+                dataKey="shortSubject"
+                tick={{ fill: "#94a3b8", fontSize: 10 }}
+                interval={0}
+                angle={-15}
+                textAnchor="end"
+              />
+              <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} domain={[0, 100]} />
+              <Tooltip content={<CustomBarTooltip />} />
+              <ReferenceLine
+                y={75}
+                stroke="#10b981"
+                strokeDasharray="3 3"
+                label={{ value: "Mastery Benchmark: 75%", fill: "#10b981", fontSize: 10 }}
+              />
+              <ReferenceLine
+                y={60}
+                stroke="#f43f5e"
+                strokeDasharray="3 3"
+                label={{ value: "Safe Threshold: 60%", fill: "#f43f5e", fontSize: 10 }}
+              />
+              <Bar dataKey="masteryScore" radius={[8, 8, 0, 0]}>
+                {filteredMasteryData.map((entry, index) => (
+                  <Cell key={`bar-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Subtopic Heatmap Matrix Grid */}
+      <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-white flex items-center space-x-1.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Granular Subtopic Diagnostic Matrix ({matrixSubtopics.length} Micro-Topics)</span>
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Click any subtopic to immediately launch an adaptive targeted drill session
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-[11px] text-slate-400 font-medium">Filter Subject:</span>
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-950 border border-white/15 text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+            >
+              <option value="all">All Subjects</option>
+              {masteryData.map((s) => (
+                <option key={s.subject} value={s.subject}>
+                  {s.shortSubject}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {matrixSubtopics.map((item, idx) => (
+            <div
+              key={idx}
+              onClick={() => {
+                showToast(`Launching targeted drill on: ${item.topic}`, "info");
+                setActiveTab("practice");
+              }}
+              className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group ${
+                item.score >= 80
+                  ? "bg-slate-900/70 border-emerald-500/30 hover:border-emerald-400 text-white"
+                  : item.score >= 65
+                  ? "bg-slate-900/70 border-cyan-500/30 hover:border-cyan-400 text-white"
+                  : item.score >= 55
+                  ? "bg-slate-900/70 border-amber-400/30 hover:border-amber-400 text-white"
+                  : "bg-slate-900/70 border-rose-500/40 hover:border-rose-400 text-white animate-pulse"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                  <span className="font-semibold text-amber-400 truncate max-w-[170px]">{item.subject}</span>
+                  <span>{item.lastTested}</span>
+                </div>
+                <h4 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                  {item.topic}
+                </h4>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 mt-2 border-t border-white/10">
+                <div className="flex items-center space-x-1.5">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      item.score >= 75 ? "bg-emerald-400" : item.score >= 60 ? "bg-amber-400" : "bg-rose-500"
+                    }`}
+                  />
+                  <span className="text-[10px] font-bold text-slate-300">
+                    Mastery: <span className="font-mono text-white">{item.score}%</span>
+                  </span>
+                </div>
+
+                <span className="text-[10px] font-bold text-amber-400 group-hover:translate-x-0.5 transition-transform flex items-center">
+                  Practice Drill <ArrowUpRight className="w-3 h-3 ml-0.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
-export {
-  TopicMasteryHeatmap
-};
+
+export { TopicMasteryHeatmap };

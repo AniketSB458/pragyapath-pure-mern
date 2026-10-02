@@ -1,491 +1,387 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { FREE_RESOURCES_DATABASE } from "../data/mockData";
 import {
+  BookOpen,
   Search,
-  Bookmark,
   ExternalLink,
-  Star,
-  Play,
-  Globe,
-  Youtube,
+  Bookmark,
+  BookmarkCheck,
+  Video,
+  FileText,
+  Sparkles,
   Layers,
+  Globe,
   Loader2,
   X,
-  PlusCircle
+  Play
 } from "lucide-react";
+
 const FreeResourcesView = () => {
-  const { profile, activeExam, toggleBookmarkResource, addDailySession, t } = useApp();
-  const [viewMode, setViewMode] = useState("live");
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedLanguage, setSelectedLanguage] = useState("All");
+  const { profile, toggleBookmarkResource, customSavedResources, showToast, t } = useApp();
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedFormat, setSelectedFormat] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [liveQuery, setLiveQuery] = useState("Indian Constitution Fundamental Rights & Articles");
-  const [liveSource, setLiveSource] = useState("all");
-  const [liveResults, setLiveResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [sourceUsed, setSourceUsed] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
-  const [selectedVideoModal, setSelectedVideoModal] = useState(null);
-  const stepCategories = ["All", "Learn", "Understand", "Practice", "Evaluate"];
-  const languages = ["All", "English", "Hindi", "Bilingual"];
-  const quickTopicChips = [
-    "Indian Constitution & Fundamental Rights",
-    "Quantitative Aptitude & Percentages",
-    "Logical Reasoning & Syllogisms",
-    "Modern Indian Freedom Movement",
-    "Macroeconomics & Inflation",
-    "Data Interpretation & Bar Charts",
-    "General Science in Daily Life",
-    "English Grammar 120 Rules"
+
+  const [liveQuery, setLiveQuery] = useState("");
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
+  const [liveSearchResults, setLiveSearchResults] = useState(null);
+
+  const [activeVideoModal, setActiveVideoModal] = useState(null);
+
+  const allResources = [...FREE_RESOURCES_DATABASE, ...(customSavedResources || [])];
+  const uniqueResources = Array.from(new Map(allResources.map((item) => [item.id, item])).values());
+
+  const categories = [
+    "All",
+    "Operating Systems",
+    "Computer Architecture",
+    "Computer Networks",
+    "Database Systems",
+    "General Studies",
+    "Full Mock Tests"
   ];
-  const handleLiveSearch = useCallback(
-    async (queryOverride, sourceOverride) => {
-      const q = (queryOverride !== void 0 ? queryOverride : liveQuery).trim();
-      const s = sourceOverride !== void 0 ? sourceOverride : liveSource;
-      if (!q) return;
-      setIsSearching(true);
-      try {
-        const response = await fetch("/api/resources/live-search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: q,
-            source: s,
-            exam: activeExam?.name || profile.targetGoal || "Competitive Exam",
-            subject: activeExam?.fullName || "General Studies, Aptitude & Core Syllabus",
-            language: profile.language
-          })
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setLiveResults(data.resources || []);
-          setSourceUsed(data.sourceUsed || "api");
-          setHasSearched(true);
-        }
-      } catch (err) {
-        console.error("Error fetching live resources:", err);
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [liveQuery, liveSource, activeExam, profile]
-  );
-  useEffect(() => {
-    if (!hasSearched && liveResults.length === 0) {
-      handleLiveSearch();
-    }
-  }, [hasSearched, liveResults.length, handleLiveSearch]);
-  const handleChipClick = (topic) => {
-    setLiveQuery(topic);
-    handleLiveSearch(topic, liveSource);
-  };
-  const filteredCuratedResources = FREE_RESOURCES_DATABASE.filter((res) => {
-    const matchesCategory = activeCategory === "All" || res.stepCategory.toLowerCase() === activeCategory.toLowerCase();
-    const matchesLang = selectedLanguage === "All" || res.language.toLowerCase() === selectedLanguage.toLowerCase();
-    const matchesQuery = res.title.toLowerCase().includes(searchQuery.toLowerCase()) || res.subject.toLowerCase().includes(searchQuery.toLowerCase()) || res.topic.toLowerCase().includes(searchQuery.toLowerCase()) || res.instructorOrEntity.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesLang && matchesQuery;
+
+  const formats = ["All", "Video Lecture", "PDF Notes", "Interactive Portal", "Course Playlist"];
+
+  const filteredResources = uniqueResources.filter((item) => {
+    const matchesCategory =
+      selectedCategory === "All" ||
+      item.stepCategory.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+      item.curatedForExam.toLowerCase().includes(selectedCategory.toLowerCase());
+
+    const matchesFormat = selectedFormat === "All" || item.format === selectedFormat;
+
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.instructorOrEntity.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesCategory && matchesFormat && matchesSearch;
   });
-  return <div className="space-y-4">
-      {
-    /* Glassmorphic Header with Mode Switcher */
-  }
-      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl">
+
+  const handleLiveSearch = async (e) => {
+    e.preventDefault();
+    if (!liveQuery.trim()) return;
+    setIsSearchingLive(true);
+    try {
+      const response = await fetch("/api/resources/live-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: liveQuery })
+      });
+      const data = await response.json();
+      if (data && data.results) {
+        setLiveSearchResults(data.results);
+        showToast(`Discovered ${data.results.length} verified open resources!`, "success");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Could not complete live open search. Please retry.", "error");
+    } finally {
+      setIsSearchingLive(false);
+    }
+  };
+
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    let videoId = null;
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1]?.split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
+  };
+
+  const openResource = (res) => {
+    const embedUrl = getYoutubeEmbedUrl(res.linkUrl);
+    if (embedUrl) {
+      setActiveVideoModal({
+        title: res.title,
+        instructor: res.instructorOrEntity,
+        embedUrl,
+        directUrl: res.linkUrl
+      });
+    } else {
+      window.open(res.linkUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  return (
+    <div className="space-y-6 text-white">
+      {/* Sleek Compact Glass Header */}
+      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-xs shadow-red-500/50 animate-pulse" />
+          <h1 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+            <BookOpen className="w-5 h-5 text-amber-400" />
             <span className="tracking-tight">{t("resources_banner_title")}</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {t("resources_live_desc")}
+          <p className="text-xs text-slate-400 mt-0.5">
+            {t("resources_banner_desc")}
           </p>
-        </div>
-
-        {
-    /* Mode Switcher Pills */
-  }
-        <div className="flex items-center space-x-1 bg-white/50 backdrop-blur-md p-1 rounded-xl border border-white/70 shadow-2xs shrink-0">
-          <button
-    onClick={() => setViewMode("live")}
-    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${viewMode === "live" ? "bg-linear-to-r from-red-600 to-rose-600 text-white shadow-sm shadow-red-500/25 border border-white/30" : "text-slate-600 hover:text-slate-900"}`}
-  >
-            <Youtube className="w-3.5 h-3.5" />
-            <span>{t("resources_tab_live")}</span>
-          </button>
-          <button
-    onClick={() => setViewMode("curated")}
-    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${viewMode === "curated" ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-sm shadow-indigo-500/25 border border-white/30" : "text-slate-600 hover:text-slate-900"}`}
-  >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{t("resources_tab_curated")}</span>
-          </button>
         </div>
       </div>
 
-      {
-    /* ========================================================== */
-  }
-      {
-    /* MODE 1: LIVE INTERNET & YOUTUBE API SEARCH                */
-  }
-      {
-    /* ========================================================== */
-  }
-      {viewMode === "live" && <div className="space-y-4">
-          {
-    /* Frosted Glass Search Controls */
-  }
-          <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-3">
-            <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      handleLiveSearch();
-    }}
-    className="flex flex-col sm:flex-row items-center gap-2.5"
-  >
-              <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-    type="text"
-    value={liveQuery}
-    onChange={(e) => setLiveQuery(e.target.value)}
-    placeholder={t("resources_search_placeholder")}
-    className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm rounded-xl glass-input font-medium text-slate-900"
-  />
-              </div>
+      {/* Live Open-Access Search Bar */}
+      <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 bg-slate-900/70 backdrop-blur-xl shadow-xl space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <Globe className="w-4 h-4 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-white">
+              Live Open-Access Educational Search
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              Query open universities, NPTEL archives, MIT OpenCourseWare, and verified YouTube lectures
+            </p>
+          </div>
+        </div>
 
-              <select
-    value={liveSource}
-    onChange={(e) => {
-      const s = e.target.value;
-      setLiveSource(s);
-      handleLiveSearch(liveQuery, s);
-    }}
-    className="w-full sm:w-auto text-xs px-3.5 py-2.5 rounded-xl glass-input font-semibold text-slate-700 cursor-pointer"
-  >
-                <option value="all">{t("resources_source_all")}</option>
-                <option value="youtube">{t("resources_source_yt")}</option>
-                <option value="web">{t("resources_source_web")}</option>
-              </select>
+        <form onSubmit={handleLiveSearch} className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              value={liveQuery}
+              onChange={(e) => setLiveQuery(e.target.value)}
+              placeholder="e.g. NPTEL Operating Systems Kharagpur or Discrete Mathematics MIT"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-white/15 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isSearchingLive || !liveQuery.trim()}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
+          >
+            {isSearchingLive ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Searching Open Web...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Deep Open Search</span>
+              </>
+            )}
+          </button>
+        </form>
 
+        {/* Live Search Results */}
+        {liveSearchResults && (
+          <div className="pt-3 border-t border-white/10 space-y-2">
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Found {liveSearchResults.length} live open-access resources</span>
               <button
-    type="submit"
-    disabled={isSearching}
-    className="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-5 py-2.5 rounded-xl bg-linear-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-md shadow-red-500/20 border border-white/20"
-  >
-                {isSearching ? <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                    <span>{t("resources_searching")}</span>
-                  </> : <>
-                    <Search className="w-3.5 h-3.5" />
-                    <span>{t("resources_search_btn")}</span>
-                  </>}
+                onClick={() => setLiveSearchResults(null)}
+                className="text-[11px] text-amber-400 hover:underline cursor-pointer"
+              >
+                Close live results
               </button>
-            </form>
-
-            {
-    /* Quick Chips */
-  }
-            <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pt-1">
-              <span className="text-[11px] font-semibold text-slate-400 shrink-0">
-                {t("resources_quick_topics_label")}:
-              </span>
-              {quickTopicChips.map((chip, i) => <button
-    key={i}
-    onClick={() => handleChipClick(chip)}
-    className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white/60 hover:bg-red-50 hover:text-red-700 hover:border-red-200/80 border border-white/80 whitespace-nowrap transition-all cursor-pointer shadow-2xs backdrop-blur-md"
-  >
-                  + {chip}
-                </button>)}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              {liveSearchResults.map((res, rIdx) => (
+                <div
+                  key={rIdx}
+                  className="p-3 rounded-xl bg-slate-950/70 border border-amber-400/20 hover:border-amber-400/40 flex items-start justify-between gap-2 text-xs"
+                >
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-bold text-amber-400">{res.platform}</span>
+                    <h5 className="font-bold text-white leading-tight">{res.title}</h5>
+                    <p className="text-[11px] text-slate-400">{res.instructorOrEntity}</p>
+                  </div>
+                  <button
+                    onClick={() => openResource(res)}
+                    className="p-2 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 transition-colors shrink-0"
+                    title="Open Resource"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
+      </div>
 
-          {
-    /* Results Status Header */
-  }
-          <div className="flex items-center justify-between text-xs text-slate-600 px-1 font-medium">
-            <span>
-              {liveResults.length} {t("resources_live_results_count")} for "{liveQuery}"
-            </span>
-            {sourceUsed && <span className="text-[10px] uppercase font-bold text-emerald-800 bg-emerald-50/80 backdrop-blur-md px-2.5 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs">
-                {sourceUsed.replace("_", " ")}
-              </span>}
+      {/* Local Filter Bar */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative w-full sm:w-72">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter curated repository..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-white/15 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
           </div>
 
-          {
-    /* Loading */
-  }
-          {isSearching && <div className="p-10 text-center glass-card rounded-2xl space-y-2">
-              <Loader2 className="w-7 h-7 animate-spin text-red-600 mx-auto" />
-              <p className="text-xs font-semibold text-slate-700">{t("resources_searching")}</p>
-            </div>}
+          {/* Formats Filter */}
+          <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            {formats.map((fmt) => (
+              <button
+                key={fmt}
+                onClick={() => setSelectedFormat(fmt)}
+                className={`px-2.5 py-1 text-xs rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  selectedFormat === fmt
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-xs"
+                    : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
+                }`}
+              >
+                {fmt}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {
-    /* Glass Grid */
-  }
-          {!isSearching && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {liveResults.map((res) => {
-    const isBookmarked = profile.bookmarkedResourceIds.includes(res.id);
-    const isYouTube = res.platform?.toLowerCase().includes("youtube") || res.sourceType === "youtube" || !!res.videoId;
-    return <div
-      key={res.id}
-      className="glass-card rounded-2xl p-4.5 hover:shadow-lg hover:border-white transition-all flex flex-col justify-between group"
-    >
-                    <div>
-                      {
-      /* Video Thumbnail */
-    }
-                      {res.thumbnailUrl && <div
-      onClick={() => {
-        if (res.videoId) setSelectedVideoModal(res);
-      }}
-      className={`relative mb-3 rounded-xl overflow-hidden aspect-video bg-slate-900 border border-white/20 shadow-sm ${res.videoId ? "cursor-pointer" : ""}`}
-    >
-                          <img
-      src={res.thumbnailUrl}
-      alt={res.title}
-      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
-    />
-                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                            {res.videoId && <div className="w-10 h-10 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg shadow-red-600/40 border border-white/30 backdrop-blur-xs group-hover:scale-110 transition-transform">
-                                <Play className="w-4 h-4 fill-white ml-0.5" />
-                              </div>}
-                          </div>
-                          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white">
-                            <span className="bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 flex items-center space-x-1">
-                              {isYouTube ? <Youtube className="w-3 h-3 text-red-500 inline mr-1" /> : <Globe className="w-3 h-3 text-emerald-400 inline mr-1" />}
-                              <span>{res.platform}</span>
-                            </span>
-                            <span className="bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 text-amber-300">
-                              ★ {res.rating?.toFixed(1) || "4.8"}
-                            </span>
-                          </div>
-                        </div>}
+        {/* Categories Bar */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-1">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 text-xs rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                selectedCategory === cat
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-2xs"
+                  : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-red-700 bg-red-50/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-red-200/70 uppercase">
-                          {res.stepCategory || "Learn"}
-                        </span>
+      {/* Resources Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredResources.map((res) => {
+          const isBookmarked = profile.bookmarkedResourceIds.includes(res.id);
+          const isVideo = res.platform?.toLowerCase().includes("youtube") || res.format === "Video Lecture";
 
-                        <button
-      onClick={() => toggleBookmarkResource(res.id, res)}
-      className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white/60 transition-colors cursor-pointer"
-      title={isBookmarked ? "Remove" : "Save"}
-    >
-                          <Bookmark
-      className={`w-3.5 h-3.5 ${isBookmarked ? "fill-indigo-600 text-indigo-600" : ""}`}
-    />
-                        </button>
+          return (
+            <div
+              key={res.id}
+              className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/60 backdrop-blur-xl hover:border-amber-400/40 transition-all shadow-xl flex flex-col justify-between group"
+            >
+              <div>
+                {/* Optional Video Thumbnail Preview */}
+                {res.thumbnailUrl && (
+                  <div
+                    onClick={() => openResource(res)}
+                    className="relative mb-3.5 rounded-xl overflow-hidden aspect-video bg-slate-950 border border-white/10 group-hover:border-amber-400/30 transition-colors cursor-pointer"
+                  >
+                    <img
+                      src={res.thumbnailUrl}
+                      alt={res.title}
+                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 flex items-center justify-center transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/40">
+                        <Play className="w-4 h-4 fill-slate-950 ml-0.5" />
                       </div>
-
-                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 mb-1 line-clamp-2">
-                        {res.title}
-                      </h3>
-
-                      <p className="text-[11px] text-red-600 font-semibold mb-1.5">
-                        {res.instructorOrEntity}
-                      </p>
-
-                      <p className="text-xs text-slate-600 line-clamp-2 mb-3 leading-relaxed">
-                        {res.description}
-                      </p>
                     </div>
+                  </div>
+                )}
 
-                    {
-      /* Actions */
-    }
-                    <div className="pt-2.5 border-t border-slate-200/50 flex items-center space-x-2">
-                      {res.videoId ? <button
-      onClick={() => setSelectedVideoModal(res)}
-      className="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-xl bg-white/70 hover:bg-white text-red-700 border border-white/80 text-xs font-bold transition-all cursor-pointer shadow-2xs backdrop-blur-md"
-    >
-                          <Play className="w-3 h-3 fill-red-600" />
-                          <span>{t("resources_preview_video")}</span>
-                        </button> : null}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-400/20">
+                    {res.stepCategory}
+                  </span>
 
-                      <a
-      href={res.linkUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-xl text-white text-xs font-bold transition-all shadow-xs border border-white/20 ${res.videoId ? "bg-slate-900/90 hover:bg-slate-900 backdrop-blur-md" : "w-full bg-linear-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"}`}
-    >
-                        <span>{isYouTube ? t("resources_watch_yt") : "Open"}</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>;
-  })}
-            </div>}
-        </div>}
+                  <button
+                    onClick={() => toggleBookmarkResource(res.id)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-white/10 transition-colors cursor-pointer"
+                    title={isBookmarked ? "Remove Bookmark" : "Bookmark Resource"}
+                  >
+                    {isBookmarked ? (
+                      <BookmarkCheck className="w-4 h-4 text-amber-400" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
 
-      {
-    /* ========================================================== */
-  }
-      {
-    /* MODE 2: CURATED SYLLABUS HUB                               */
-  }
-      {
-    /* ========================================================== */
-  }
-      {viewMode === "curated" && <div className="space-y-4">
-          {
-    /* Filter Bar */
-  }
-          <div className="glass-card rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-            <div className="flex items-center space-x-1 overflow-x-auto w-full sm:w-auto no-scrollbar">
-              {stepCategories.map((cat) => <button
-    key={cat}
-    onClick={() => setActiveCategory(cat)}
-    className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-all ${activeCategory === cat ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-xs border border-white/20" : "bg-white/60 text-slate-700 hover:bg-white/90 border border-white/60"}`}
-  >
-                  {cat === "All" ? "All Steps" : cat}
-                </button>)}
-            </div>
+                <h3 className="text-sm font-bold text-white mb-1 group-hover:text-amber-300 transition-colors line-clamp-2">
+                  {res.title}
+                </h3>
 
-            <div className="flex items-center space-x-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-48">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
-                <input
-    type="text"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    placeholder={t("resources_search_placeholder")}
-    className="w-full pl-8 pr-2 py-1.5 text-xs rounded-lg glass-input"
-  />
+                <p className="text-xs text-amber-400/90 font-semibold mb-2">
+                  {res.instructorOrEntity} • {res.platform}
+                </p>
+
+                <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed mb-4">
+                  {res.description}
+                </p>
               </div>
 
-              <select
-    value={selectedLanguage}
-    onChange={(e) => setSelectedLanguage(e.target.value)}
-    className="text-xs px-2.5 py-1.5 rounded-lg glass-input font-medium cursor-pointer"
-  >
-                {languages.map((l) => <option key={l} value={l}>
-                    {l === "All" ? "All Lang" : l}
-                  </option>)}
-              </select>
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                <span className="text-[10px] text-slate-400 flex items-center space-x-1">
+                  {isVideo ? <Video className="w-3 h-3 text-amber-400" /> : <FileText className="w-3 h-3 text-cyan-400" />}
+                  <span>{res.format}</span>
+                </span>
+
+                <button
+                  onClick={() => openResource(res)}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                >
+                  <span>{isVideo ? "Watch In-App" : "Open Resource"}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-          </div>
+          );
+        })}
+      </div>
 
-          {
-    /* Curated Grid */
-  }
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCuratedResources.map((res) => {
-    const isBookmarked = profile.bookmarkedResourceIds.includes(res.id);
-    return <div
-      key={res.id}
-      className="glass-card rounded-2xl p-4.5 hover:shadow-lg hover:border-white transition-all flex flex-col justify-between"
-    >
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-indigo-200/70">
-                        {res.stepCategory} • {res.platform}
-                      </span>
-
-                      <button
-      onClick={() => toggleBookmarkResource(res.id, res)}
-      className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white/60 cursor-pointer transition-colors"
-    >
-                        <Bookmark
-      className={`w-3.5 h-3.5 ${isBookmarked ? "fill-indigo-600 text-indigo-600" : ""}`}
-    />
-                      </button>
-                    </div>
-
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 mb-1">{res.title}</h3>
-                    <p className="text-[11px] text-indigo-600 font-semibold mb-1">
-                      {res.instructorOrEntity}
-                    </p>
-                    <p className="text-xs text-slate-600 line-clamp-2 mb-3 leading-relaxed">{res.description}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-200/50">
-                    <div className="flex items-center space-x-1 text-amber-500 text-xs font-bold">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{res.rating.toFixed(1)}</span>
-                    </div>
-
-                    <a
-      href={res.linkUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold shadow-xs border border-white/20"
-    >
-                      <span>{t("resources_btn_watch")}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>;
-  })}
-          </div>
-        </div>}
-
-      {
-    /* Embedded Video Player Glass Modal */
-  }
-      {selectedVideoModal && <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
-          <div className="glass-dark rounded-3xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between px-5 py-3 bg-white/5 border-b border-white/10 text-white">
-              <div className="flex items-center space-x-2 truncate">
-                <Youtube className="w-4 h-4 text-red-500 shrink-0" />
-                <h3 className="text-xs sm:text-sm font-bold truncate">
-                  {selectedVideoModal.title}
-                </h3>
+      {/* In-App YouTube Video Player Modal */}
+      {activeVideoModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="glass-panel rounded-3xl max-w-3xl w-full border border-white/15 bg-slate-900/95 overflow-hidden shadow-2xl space-y-0 text-white animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-slate-950/80">
+              <div>
+                <h4 className="text-sm font-bold text-white line-clamp-1">{activeVideoModal.title}</h4>
+                <p className="text-[11px] text-amber-400">{activeVideoModal.instructor}</p>
               </div>
               <button
-    onClick={() => setSelectedVideoModal(null)}
-    className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-  >
-                <X className="w-4 h-4" />
+                onClick={() => setActiveVideoModal(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="relative aspect-video w-full bg-black">
-              {selectedVideoModal.videoId ? <iframe
-    src={`https://www.youtube-nocookie.com/embed/${selectedVideoModal.videoId}?autoplay=1&rel=0`}
-    title={selectedVideoModal.title}
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen
-    className="w-full h-full border-0"
-  /> : null}
+            <div className="aspect-video w-full bg-black">
+              <iframe
+                src={activeVideoModal.embedUrl}
+                title={activeVideoModal.title}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
 
-            <div className="p-3.5 bg-white/5 border-t border-white/10 flex items-center justify-between text-white gap-2">
-              <span className="text-xs text-slate-300 truncate">
-                {selectedVideoModal.instructorOrEntity}
-              </span>
-              <div className="flex items-center space-x-2 shrink-0">
-                <button
-    onClick={() => {
-      addDailySession({
-        title: `Video: ${selectedVideoModal.title.slice(0, 30)}...`,
-        subject: selectedVideoModal.subject || "Core Subject",
-        topic: selectedVideoModal.topic || "General Lecture",
-        durationMinutes: 45,
-        sessionType: "Concept & Theory",
-        priority: "high"
-      });
-    }}
-    className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer shadow-xs border border-white/20"
-  >
-                  <PlusCircle className="w-3 h-3" />
-                  <span>Plan</span>
-                </button>
-                <a
-    href={selectedVideoModal.linkUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-linear-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-bold shadow-xs border border-white/20"
-  >
-                  <span>{t("resources_watch_yt")}</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
+            <div className="p-3.5 bg-slate-950/80 border-t border-white/10 flex items-center justify-between text-xs">
+              <span className="text-slate-400">Streamed via YouTube Open-Access Content</span>
+              <a
+                href={activeVideoModal.directUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:underline flex items-center space-x-1"
+              >
+                <span>Open in YouTube Tab</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 };
-export {
-  FreeResourcesView
-};
+
+export { FreeResourcesView };
