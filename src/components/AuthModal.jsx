@@ -8,13 +8,11 @@ import {
   X,
   Eye,
   EyeOff,
-  ShieldCheck,
   ArrowRight,
   GraduationCap,
   Target,
   CheckCircle2,
-  AlertCircle,
-  Database
+  AlertCircle
 } from 'lucide-react';
 
 const EXAM_PRESETS = [
@@ -66,7 +64,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
     setIsLoading(true);
     try {
       await login(loginEmail.trim(), loginPassword);
-      showToast('Welcome back! Successfully authenticated with MongoDB.', 'success');
+      showToast('Welcome back! Successfully signed in.', 'success');
       if (onSuccess) {
         onSuccess();
       } else {
@@ -111,7 +109,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
         degreeOrStream: regEducation,
         dailyHours: Number(regDailyHours)
       });
-      showToast('Account created & profile initialized in MongoDB!', 'success');
+      showToast('Account created & profile initialized!', 'success');
       if (onSuccess) {
         onSuccess();
       } else {
@@ -368,18 +366,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
             </button>
           </form>
         )}
-
-        {/* Security & MongoDB Telemetry Pill */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-          <div className="flex items-center space-x-1.5">
-            <Database className="w-3.5 h-3.5 text-emerald-600" />
-            <span>MongoDB Atlas & Local Ready</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
-            <span>JWT + Bcrypt Blowfish</span>
-          </div>
-        </div>
       </div>
     </div>
   );

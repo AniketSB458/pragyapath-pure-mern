@@ -118,7 +118,7 @@ export const LandingPageView = () => {
             { title: "UPSC, SSC, Banking", desc: "Targeted Exam Roadmaps", icon: Compass },
             { title: "Adaptive PYQs", desc: "Real-time Streaks & Analytics", icon: Award },
             { title: "AI Study Mentor", desc: "24/7 Contextual Guidance", icon: BotMessageSquare },
-            { title: "MongoDB Atlas", desc: "Synchronized Cloud Progress", icon: ShieldCheck }
+            { title: "Cloud Synced", desc: "Real-time Multi-device Sync", icon: ShieldCheck }
           ].map((item, idx) => {
             const Icon = item.icon;
             return (
