@@ -1,4 +1,4 @@
-import { EXAMS_DATABASE } from "../data/mockData";
+import { EXAMS_DATABASE } from "../data/mockData.js";
 function evaluateEligibility(input) {
   const exam = EXAMS_DATABASE.find((e) => e.id === input.examId) || EXAMS_DATABASE[0];
   const checks = [];
