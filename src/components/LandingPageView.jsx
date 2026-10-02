@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import logoImg from "../assets/logo.png";
 import heroVideo from "../assets/pragyapath-video.mp4";
@@ -11,48 +10,20 @@ import {
   ShieldCheck,
   LogIn,
   UserPlus,
-  PlayCircle,
   Award,
   BookOpen,
   CheckCircle2
 } from "lucide-react";
 
 export const LandingPageView = () => {
-  const { openAuthModal, login, register, showToast } = useApp();
-  const [isDemoLoading, setIsDemoLoading] = useState(false);
-
-  const handleQuickDemo = async () => {
-    setIsDemoLoading(true);
-    try {
-      const demoEmail = "student.demo@pragyapath.edu";
-      const demoPassword = "DemoStudent2026!";
-      try {
-        await login(demoEmail, demoPassword);
-      } catch {
-        // Auto-register if not yet created in MongoDB Atlas
-        await register({
-          name: "Anya Bandgar",
-          email: demoEmail,
-          password: demoPassword,
-          targetExamId: "upsc_cse",
-          targetGoal: "National & State Competitive Exams (IAS / IPS / CGL)",
-          degreeOrStream: "Bachelor Degree (Final Year / Graduate)",
-          dailyHours: 4
-        });
-      }
-    } catch (err) {
-      showToast("Demo sign in failed. Please use Create Account.", "error");
-    } finally {
-      setIsDemoLoading(false);
-    }
-  };
+  const { openAuthModal } = useApp();
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-slate-950 text-white font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
       {/* Background Cinematic Video */}
       <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <video
-          className="absolute top-0 left-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000"
+          className="absolute top-0 left-0 w-full h-full object-cover opacity-90 scale-105 transition-opacity duration-1000"
           src={heroVideo}
           autoPlay
           loop
@@ -60,8 +31,8 @@ export const LandingPageView = () => {
           playsInline
         />
         {/* Dark Film Noir & Amber Gradient Overlays for Readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/60 to-slate-950/95" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.85)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-slate-950/75" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.55)_100%)]" />
       </div>
 
       {/* Top Navigation Bar */}
@@ -138,18 +109,6 @@ export const LandingPageView = () => {
           >
             <LogIn className="w-4 h-4 text-amber-400" />
             <span>Sign In</span>
-          </button>
-        </div>
-
-        {/* Instant 1-Click Demo Login */}
-        <div className="mt-4">
-          <button
-            onClick={handleQuickDemo}
-            disabled={isDemoLoading}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-amber-300/90 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 backdrop-blur-md transition-all cursor-pointer"
-          >
-            <PlayCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>{isDemoLoading ? "Authenticating with MongoDB..." : "Instant Demo Student Access (1-Click)"}</span>
           </button>
         </div>
 

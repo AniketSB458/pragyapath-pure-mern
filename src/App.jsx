@@ -54,7 +54,7 @@ const AppContent = () => {
         {/* Full-screen Background Video */}
         <div className="fixed inset-0 w-full h-full overflow-hidden z-0">
           <video
-            className="absolute top-0 left-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000"
+            className="absolute top-0 left-0 w-full h-full object-cover opacity-90 scale-105 transition-opacity duration-1000"
             src={heroVideo}
             autoPlay
             loop
@@ -62,8 +62,8 @@ const AppContent = () => {
             playsInline
           />
           {/* Glassmorphic Film Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/55 to-slate-950/95" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.85)_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-slate-950/75" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.55)_100%)]" />
         </div>
 
         {/* Top Header Bar on Intro */}

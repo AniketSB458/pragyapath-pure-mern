@@ -8,7 +8,6 @@ import {
   X,
   Eye,
   EyeOff,
-  Sparkles,
   ShieldCheck,
   ArrowRight,
   GraduationCap,
@@ -120,40 +119,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
       }
     } catch (err) {
       setErrorMessage(err.message || 'Registration failed. Please try a different email.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async () => {
-    setIsLoading(true);
-    setErrorMessage('');
-    try {
-      // Demo credentials pre-set
-      const demoEmail = 'student.demo@pragyapath.edu';
-      const demoPassword = 'DemoStudent2026!';
-      try {
-        await login(demoEmail, demoPassword);
-      } catch {
-        // If not registered yet, auto-register the demo user
-        await register({
-          name: 'Anya Bandgar',
-          email: demoEmail,
-          password: demoPassword,
-          targetExamId: 'upsc_cse',
-          targetGoal: 'National & State Competitive Exams',
-          degreeOrStream: 'Bachelor Degree (Final Year / Graduate)',
-          dailyHours: 4
-        });
-      }
-      showToast('Logged in with Demo Student account!', 'success');
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        onClose();
-      }
-    } catch (err) {
-      setErrorMessage(err.message || 'Demo login failed.');
     } finally {
       setIsLoading(false);
     }
@@ -281,19 +246,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
                 </>
               )}
             </button>
-
-            {/* Quick Demo Login Option */}
-            <div className="pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={handleQuickDemoLogin}
-                disabled={isLoading}
-                className="w-full py-2.5 px-3 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100/70 text-rose-700 font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>One-Click Instant Demo Login</span>
-              </button>
-            </div>
           </form>
         )}
 
