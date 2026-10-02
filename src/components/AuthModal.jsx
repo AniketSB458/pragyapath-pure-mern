@@ -120,14 +120,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
         onClose();
       }
     } catch (err) {
-      const msg = err.message || 'Registration failed. Please try a different email.';
-      if (msg.toLowerCase().includes('already exists')) {
-        setErrorMessage('This email is already registered! Please sign in with your password below.');
-        setLoginEmail(regEmail.trim());
-        setMode('login');
-      } else {
-        setErrorMessage(msg);
-      }
+      setErrorMessage(err.message || 'Registration failed. Please try a different email.');
     } finally {
       setIsLoading(false);
     }
@@ -191,25 +184,9 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, initialMode = 'login' })
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="p-3.5 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-200 text-xs flex flex-col space-y-2 animate-in fade-in duration-150">
-            <div className="flex items-start space-x-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-              <span className="leading-relaxed">{errorMessage}</span>
-            </div>
-            {mode === 'login' && errorMessage.toLowerCase().includes('register') && (
-              <button
-                type="button"
-                onClick={() => {
-                  setRegEmail(loginEmail.trim());
-                  setMode('register');
-                  setErrorMessage('');
-                }}
-                className="self-start mt-1 text-xs font-bold text-amber-300 hover:text-amber-200 underline underline-offset-2 flex items-center space-x-1 cursor-pointer"
-              >
-                <span>Click here to create a new account with this email</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
+          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-start space-x-2 animate-in fade-in duration-150">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{errorMessage}</span>
           </div>
         )}
 

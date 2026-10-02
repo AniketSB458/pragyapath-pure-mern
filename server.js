@@ -11,6 +11,7 @@ import sessionRoutes from './routes/sessions.js';
 import practiceRoutes from './routes/practice.js';
 import noteRoutes from './routes/notes.js';
 import bookmarkRoutes from './routes/bookmarks.js';
+import mentorRoutes from './routes/mentor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,6 +58,7 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/practice', practiceRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
+app.use('/api/mentor', mentorRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
