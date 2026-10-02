@@ -6,7 +6,7 @@ const router = express.Router();
 // GET /api/sessions?userId=...
 router.get('/', async (req, res) => {
   try {
-    const userId = req.query.userId || 'anyabandgar458@gmail.com';
+    const userId = req.query.userId || 'guest';
     const sessions = await StudySession.find({ userId }).sort({ createdAt: -1 });
     res.json({ success: true, sessions });
   } catch (error) {
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      userId = 'anyabandgar458@gmail.com',
+      userId = 'guest',
       title,
       subject,
       topic,

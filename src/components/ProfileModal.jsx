@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import logoImg from "../assets/logo.png";
 import {
@@ -8,14 +8,14 @@ import {
   GraduationCap,
   Target,
   ShieldCheck,
-  Plus,
-  LogOut,
-  LogIn
+  Plus
 } from "lucide-react";
+
 const ProfileModal = ({ isOpen, onClose, onComplete }) => {
-  const { profile, updateProfile, showToast, t } = useApp();
-  const [name, setName] = useState(profile.name || "Anya Bandgar");
-  const [email, setEmail] = useState(profile.email || "anyabandgar458@gmail.com");
+  const { profile, user, updateProfile, showToast, t } = useApp();
+
+  const [name, setName] = useState(user?.name || profile.name || "");
+  const [email, setEmail] = useState(user?.email || profile.email || "");
   const [educationStage, setEducationStage] = useState(profile.educationStage || "graduate_job_seeker");
   const [degreeOrStream, setDegreeOrStream] = useState(profile.degreeOrStream || "Bachelor Degree (Final Year / Graduate)");
   const [currentYear, setCurrentYear] = useState(profile.currentYear || "Final Year Aspirant");
@@ -24,21 +24,43 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
   const [dailyHours, setDailyHours] = useState(profile.dailyHours || 4);
   const [weakTopics, setWeakTopics] = useState(profile.weakTopics || []);
   const [newWeakTopic, setNewWeakTopic] = useState("");
+
+  // Sync state whenever profile, user, or modal visibility updates
+  useEffect(() => {
+    if (isOpen) {
+      setName(user?.name || profile.name || "");
+      setEmail(user?.email || profile.email || "");
+      setEducationStage(profile.educationStage || "graduate_job_seeker");
+      setDegreeOrStream(profile.degreeOrStream || "Bachelor Degree (Final Year / Graduate)");
+      setCurrentYear(profile.currentYear || "Final Year Aspirant");
+      setTargetGoal(profile.targetGoal || "National & State Competitive Exams");
+      setTargetYear(profile.targetYear || "2026");
+      setDailyHours(profile.dailyHours || 4);
+      setWeakTopics(profile.weakTopics || []);
+    }
+  }, [isOpen, profile, user]);
+
   if (!isOpen) return null;
+
   const handleAddWeakTopic = () => {
     if (newWeakTopic.trim() && !weakTopics.includes(newWeakTopic.trim())) {
       setWeakTopics([...weakTopics, newWeakTopic.trim()]);
       setNewWeakTopic("");
     }
   };
+
   const handleRemoveWeakTopic = (topic) => {
     setWeakTopics(weakTopics.filter((t2) => t2 !== topic));
   };
-  const handleSave = (e) => {
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateProfile({
-      name: name.trim() || "Anya Bandgar",
-      email: email.trim() || "anyabandgar458@gmail.com",
+    const resolvedName = name.trim() || user?.name || profile.name || "Student Aspirant";
+    const resolvedEmail = email.trim() || user?.email || profile.email;
+
+    await updateProfile({
+      name: resolvedName,
+      email: resolvedEmail,
       educationStage,
       degreeOrStream,
       currentYear,
@@ -47,117 +69,114 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
       dailyHours,
       weakTopics
     });
-    showToast("Your personal profile and learning plan have been saved!", "success");
+
+    showToast("Profile & learning goals saved to MongoDB successfully!", "success");
     if (onComplete) onComplete();
     onClose();
   };
-  return <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-white/90 backdrop-blur-2xl border border-white/80 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 my-8 max-h-[90vh] overflow-y-auto">
-        {
-    /* Header */
-  }
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+
+  const displayInitial = (name || user?.name || profile.name || "S").charAt(0).toUpperCase();
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-slate-900/95 backdrop-blur-2xl border border-white/15 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto text-white relative">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white/10 p-0.5 flex items-center justify-center">
               <img
                 src={logoImg}
                 alt="PragyaPath Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-lg"
               />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-base font-extrabold text-slate-900">{t("profile_modal_title")}</h2>
-                <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
-                  {t("profile_single_mode")}
+                <h2 className="text-base font-extrabold text-white">{t("profile_modal_title")}</h2>
+                <span className="text-[10px] font-bold bg-amber-400/10 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
+                  MongoDB Synced
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {t("profile_modal_subtitle")}
               </p>
             </div>
           </div>
           <button
-    onClick={() => {
-      if (onComplete) onComplete();
-      onClose();
-    }}
-    className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-  >
+            onClick={() => {
+              if (onComplete) onComplete();
+              onClose();
+            }}
+            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* User Account Verification Pill */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-100 text-xs">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-white/10 text-xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-pink-500 text-white font-extrabold flex items-center justify-center text-xs">
-              {name.charAt(0).toUpperCase()}
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shadow-xs">
+              {displayInitial}
             </div>
             <div>
-              <p className="font-bold text-slate-900">{name}</p>
-              <p className="text-[11px] text-slate-600 flex items-center space-x-1">
-                <Mail className="w-3 h-3 text-rose-500 inline" />
-                <span>{email}</span>
+              <p className="font-bold text-white">{name || user?.name || "Student Aspirant"}</p>
+              <p className="text-[11px] text-slate-400 flex items-center space-x-1">
+                <Mail className="w-3 h-3 text-amber-400 inline" />
+                <span>{email || user?.email || "No email assigned"}</span>
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-1 text-[11px] font-semibold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center space-x-1 text-[11px] font-semibold text-amber-300 bg-amber-400/10 px-2.5 py-1 rounded-lg border border-amber-400/30 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
             <span>Dedicated Account</span>
           </div>
         </div>
 
-        {
-    /* Profile Edit Form */
-  }
+        {/* Profile Edit Form */}
         <form onSubmit={handleSave} className="space-y-4 text-xs">
-          {
-    /* Personal Information */
-  }
+          {/* Personal Information */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Full Name</label>
+              <label className="block font-bold text-slate-300 mb-1">Full Name</label>
               <input
-    type="text"
-    required
-    value={name}
-    onChange={(e) => setName(e.target.value)}
-    placeholder="e.g. Anya Bandgar"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+              />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Account Email</label>
+              <label className="block font-bold text-slate-300 mb-1">Account Email</label>
               <input
-    type="email"
-    required
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    placeholder="e.g. anyabandgar458@gmail.com"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+              />
             </div>
           </div>
 
-          {
-    /* Academic Background */
-  }
-          <div className="pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
-              <GraduationCap className="w-4 h-4 text-indigo-600" />
+          {/* Academic Background */}
+          <div className="pt-2 border-t border-white/10">
+            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
+              <GraduationCap className="w-4 h-4 text-amber-400" />
               <span>Academic Details</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Education Stage</label>
+                <label className="block font-bold text-slate-300 mb-1">Education Stage</label>
                 <select
-    value={educationStage}
-    onChange={(e) => setEducationStage(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  >
+                  value={educationStage}
+                  onChange={(e) => setEducationStage(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white"
+                >
                   <option value="ug_engineering">Undergraduate Engineering (B.Tech / B.E.)</option>
                   <option value="ug_general">Undergraduate General (B.Sc / BCA / B.Com)</option>
                   <option value="diploma">Polytechnic Diploma</option>
@@ -169,77 +188,75 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Stream / Branch</label>
+                <label className="block font-bold text-slate-300 mb-1">Stream / Branch</label>
                 <input
-    type="text"
-    value={degreeOrStream}
-    onChange={(e) => setDegreeOrStream(e.target.value)}
-    placeholder="e.g. B.Tech Computer Science & Engineering"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                  type="text"
+                  value={degreeOrStream}
+                  onChange={(e) => setDegreeOrStream(e.target.value)}
+                  placeholder="e.g. B.Tech Computer Science & Engineering"
+                  className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+                />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Current Academic Year</label>
+                <label className="block font-bold text-slate-300 mb-1">Current Academic Year</label>
                 <input
-    type="text"
-    value={currentYear}
-    onChange={(e) => setCurrentYear(e.target.value)}
-    placeholder="e.g. 3rd Year (6th Semester)"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                  type="text"
+                  value={currentYear}
+                  onChange={(e) => setCurrentYear(e.target.value)}
+                  placeholder="e.g. 3rd Year (6th Semester)"
+                  className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+                />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Target Examination Year</label>
+                <label className="block font-bold text-slate-300 mb-1">Target Examination Year</label>
                 <input
-    type="text"
-    value={targetYear}
-    onChange={(e) => setTargetYear(e.target.value)}
-    placeholder="e.g. 2026"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                  type="text"
+                  value={targetYear}
+                  onChange={(e) => setTargetYear(e.target.value)}
+                  placeholder="e.g. 2026"
+                  className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+                />
               </div>
             </div>
           </div>
 
-          {
-    /* Goal & Daily Effort */
-  }
-          <div className="pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
-              <Target className="w-4 h-4 text-indigo-600" />
+          {/* Goal & Daily Effort */}
+          <div className="pt-2 border-t border-white/10">
+            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
+              <Target className="w-4 h-4 text-amber-400" />
               <span>Target Career & Daily Goal</span>
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Primary Target Goal / Exam</label>
+                <label className="block font-bold text-slate-300 mb-1">Primary Target Goal / Exam</label>
                 <input
-    type="text"
-    required
-    value={targetGoal}
-    onChange={(e) => setTargetGoal(e.target.value)}
-    placeholder="e.g. UPSC CSE, SSC CGL, Banking PO, State PSC, CAT, Defense, NEET, GATE..."
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-  />
+                  type="text"
+                  required
+                  value={targetGoal}
+                  onChange={(e) => setTargetGoal(e.target.value)}
+                  placeholder="e.g. UPSC CSE, SSC CGL, Banking PO, State PSC, CAT, Defense, NEET, GATE..."
+                  className="w-full px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-800/90 text-white placeholder-slate-500"
+                />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-bold text-slate-700">Committed Daily Study Hours</label>
-                  <span className="font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-lg text-xs">
+                  <label className="font-bold text-slate-300">Committed Daily Study Hours</label>
+                  <span className="font-extrabold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-lg text-xs">
                     {dailyHours} Hours / Day
                   </span>
                 </div>
                 <input
-    type="range"
-    min="1"
-    max="12"
-    value={dailyHours}
-    onChange={(e) => setDailyHours(Number(e.target.value))}
-    className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
-  />
+                  type="range"
+                  min="1"
+                  max="12"
+                  value={dailyHours}
+                  onChange={(e) => setDailyHours(Number(e.target.value))}
+                  className="w-full accent-amber-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
+                />
                 <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
                   <span>1 hr (Light)</span>
                   <span>4 hrs (Balanced)</span>
@@ -249,56 +266,58 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
             </div>
           </div>
 
-          {
-    /* Weak Topics Diagnostic List */
-  }
-          <div className="pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          {/* Weak Topics Diagnostic List */}
+          <div className="pt-2 border-t border-white/10">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-1.5 flex items-center justify-between">
               <span>Remedial & Weak Topics</span>
-              <span className="text-[10px] text-slate-500 font-normal lowercase">
+              <span className="text-[10px] text-slate-400 font-normal lowercase">
                 ({weakTopics.length} topics flagged)
               </span>
             </h3>
-            <p className="text-[11px] text-slate-500 mb-2">
+            <p className="text-[11px] text-slate-400 mb-2">
               PragyaPath schedules targeted PYQs and planner sessions based on these topics.
             </p>
 
             <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {weakTopics.map((topic, idx) => <span
-    key={idx}
-    className="inline-flex items-center space-x-1.5 bg-rose-50 text-rose-800 border border-rose-200 px-2.5 py-1 rounded-lg text-[11px] font-medium"
-  >
+              {weakTopics.map((topic, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center space-x-1.5 bg-amber-400/10 text-amber-300 border border-amber-400/30 px-2.5 py-1 rounded-lg text-[11px] font-medium"
+                >
                   <span>{topic}</span>
                   <button
-    type="button"
-    onClick={() => handleRemoveWeakTopic(topic)}
-    className="hover:text-rose-950 p-0.5 cursor-pointer"
-  >
+                    type="button"
+                    onClick={() => handleRemoveWeakTopic(topic)}
+                    className="hover:text-white p-0.5 cursor-pointer text-amber-400"
+                  >
                     <X className="w-3 h-3" />
                   </button>
-                </span>)}
-              {weakTopics.length === 0 && <span className="text-xs text-slate-400 italic">No weak topics flagged. All clear!</span>}
+                </span>
+              ))}
+              {weakTopics.length === 0 && (
+                <span className="text-xs text-slate-500 italic">No weak topics flagged. All clear!</span>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
               <input
-    type="text"
-    value={newWeakTopic}
-    onChange={(e) => setNewWeakTopic(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAddWeakTopic();
-      }
-    }}
-    placeholder="Add a topic needing revision (e.g. Cache Mapping, CIDR)..."
-    className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  />
+                type="text"
+                value={newWeakTopic}
+                onChange={(e) => setNewWeakTopic(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddWeakTopic();
+                  }
+                }}
+                placeholder="Add a topic needing revision (e.g. Cache Mapping, CIDR)..."
+                className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-white/10 bg-slate-800/90 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
               <button
-    type="button"
-    onClick={handleAddWeakTopic}
-    className="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-700 font-bold rounded-xl border border-slate-200 flex items-center space-x-1 cursor-pointer transition-colors"
-  >
+                type="button"
+                onClick={handleAddWeakTopic}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-bold rounded-xl border border-white/15 flex items-center space-x-1 cursor-pointer transition-colors"
+              >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add</span>
               </button>
@@ -306,25 +325,25 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-2 pt-4 border-t border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer transition-colors"
+              className="px-4 py-2 rounded-xl border border-white/15 text-slate-300 hover:text-white hover:bg-white/10 font-semibold cursor-pointer transition-colors"
             >
               {t("profile_btn_cancel")}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-bold shadow-md shadow-pink-500/25 cursor-pointer transition-all"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-md shadow-amber-500/25 cursor-pointer transition-all border border-amber-300"
             >
-              {t("profile_btn_save")}
+              Save & Sync to MongoDB
             </button>
           </div>
         </form>
       </div>
-    </div>;
+    </div>
+  );
 };
-export {
-  ProfileModal
-};
+
+export { ProfileModal };

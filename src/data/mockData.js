@@ -1,6 +1,6 @@
 const INITIAL_USER_PROFILE = {
-  name: "Anya Bandgar",
-  email: "anyabandgar458@gmail.com",
+  name: "Student Aspirant",
+  email: "",
   educationStage: "graduate_job_seeker",
   degreeOrStream: "Bachelor Degree (Final Year / Graduate)",
   currentYear: "Final Year Aspirant",

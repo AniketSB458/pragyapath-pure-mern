@@ -145,7 +145,8 @@ export const LandingPageView = () => {
           </div>
           <div className="flex items-center space-x-1.5 text-slate-400">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Official Gazettes & Examination Portals</span>
+            <span>Official Gazettes & Examination Portals - Made By 458TM
+            </span>
           </div>
         </div>
       </footer>

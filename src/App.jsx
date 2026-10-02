@@ -175,7 +175,7 @@ const AppContent = () => {
 
   // STAGE 4: Main Website Portal (Revealed only after Video -> Auth -> Profile)
   return (
-    <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-amber-50/40 via-rose-50/25 to-pink-50/40 text-slate-900 font-sans flex flex-col selection:bg-pink-500 selection:text-white animate-in fade-in duration-500">
+    <div className="min-h-screen relative overflow-x-hidden bg-slate-950 text-white font-sans flex flex-col selection:bg-amber-500 selection:text-slate-950 animate-in fade-in duration-500">
       {/* Ambient Glassmorphic Background Glow Orbs */}
       <div className="fixed top-[-12%] left-[-8%] w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] rounded-full ambient-glow-1 blur-3xl pointer-events-none -z-10" />
       <div className="fixed top-[32%] right-[-12%] w-[600px] sm:w-[750px] h-[600px] sm:h-[750px] rounded-full ambient-glow-2 blur-3xl pointer-events-none -z-10" />

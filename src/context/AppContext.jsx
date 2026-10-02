@@ -75,26 +75,14 @@ const AppProvider = ({ children }) => {
       const saved = localStorage.getItem("pragyapath_user_profile");
       if (saved) {
         const parsed = JSON.parse(saved);
-        const hasLegacyName =
-          !parsed.email ||
-          parsed.name === "Rahul Sharma" ||
-          parsed.name === "Priya Deshmukh" ||
-          parsed.name === "Vikram Patel" ||
-          parsed.name === "Sneha Roy";
-        const hasGateGoal =
-          parsed.targetExamId === "gate_cse" ||
-          (parsed.targetGoal && parsed.targetGoal.includes("GATE"));
+        const isLegacyAnya = parsed.name === "Anya Bandgar" || parsed.email === "anyabandgar458@gmail.com";
+        const cleanName = isLegacyAnya ? "" : (parsed.name || "");
+        const cleanEmail = isLegacyAnya ? "" : (parsed.email || "");
         return {
+          ...INITIAL_USER_PROFILE,
           ...parsed,
-          name: hasLegacyName ? "Anya Bandgar" : parsed.name,
-          email: parsed.email || "anyabandgar458@gmail.com",
-          targetGoal: hasGateGoal
-            ? "National & State Competitive Exams"
-            : parsed.targetGoal || "National & State Competitive Exams",
-          targetExamId: hasGateGoal ? "upsc_cse" : parsed.targetExamId || "upsc_cse",
-          degreeOrStream: hasGateGoal
-            ? "Bachelor Degree (Final Year / Graduate)"
-            : parsed.degreeOrStream || "Bachelor Degree (Final Year / Graduate)"
+          name: cleanName || INITIAL_USER_PROFILE.name,
+          email: cleanEmail || INITIAL_USER_PROFILE.email
         };
       }
     } catch (e) {
@@ -222,7 +210,7 @@ const AppProvider = ({ children }) => {
 
   const refreshAttempts = useCallback(async (targetEmail) => {
     try {
-      const email = targetEmail || user?.email || profile.email || "anyabandgar458@gmail.com";
+      const email = targetEmail || user?.email || profile.email || "guest";
       const data = await api.practice.getAttempts(email);
       if (data && data.attempts) {
         setRecentAttempts(data.attempts);
@@ -272,19 +260,21 @@ const AppProvider = ({ children }) => {
         }
       }
 
-      // Guest / Fallback hydration
-      const fallbackEmail = profile.email || "anyabandgar458@gmail.com";
-      try {
-        const serverUser = await api.auth.getProfile(fallbackEmail);
-        if (serverUser && isMounted) {
-          setProfile((prev) => ({
-            ...prev,
-            ...serverUser
-          }));
+      // If user profile has an email, hydrate from MongoDB
+      if (profile.email) {
+        try {
+          const serverUser = await api.auth.getProfile(profile.email);
+          if (serverUser && isMounted) {
+            setUser(serverUser);
+            setProfile((prev) => ({
+              ...prev,
+              ...serverUser
+            }));
+            await loadUserData(profile.email);
+          }
+        } catch (err) {
+          console.warn("Fallback hydration error:", err);
         }
-        await loadUserData(fallbackEmail);
-      } catch (err) {
-        console.warn("Fallback hydration error:", err);
       }
     }
 
@@ -292,7 +282,7 @@ const AppProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, [loadUserData]);
+  }, [loadUserData, profile.email]);
 
   // Auth Actions
   const openAuthModal = (mode = "login") => {
@@ -308,10 +298,16 @@ const AppProvider = ({ children }) => {
     const res = await api.auth.login(email, password);
     if (res.user) {
       setUser(res.user);
-      setProfile((prev) => ({
-        ...prev,
-        ...res.user
-      }));
+      setProfile((prev) => {
+        const next = {
+          ...prev,
+          ...res.user
+        };
+        try {
+          localStorage.setItem("pragyapath_user_profile", JSON.stringify(next));
+        } catch (e) {}
+        return next;
+      });
       await loadUserData(res.user.email);
       showToast(`Welcome back, ${res.user.name || res.user.email}!`, "success");
       return res.user;
@@ -323,10 +319,16 @@ const AppProvider = ({ children }) => {
     const res = await api.auth.register(userData);
     if (res.user) {
       setUser(res.user);
-      setProfile((prev) => ({
-        ...prev,
-        ...res.user
-      }));
+      setProfile((prev) => {
+        const next = {
+          ...prev,
+          ...res.user
+        };
+        try {
+          localStorage.setItem("pragyapath_user_profile", JSON.stringify(next));
+        } catch (e) {}
+        return next;
+      });
       await loadUserData(res.user.email);
       showToast(`Welcome to PragyaPath, ${res.user.name}!`, "success");
       return res.user;
@@ -337,16 +339,43 @@ const AppProvider = ({ children }) => {
   const logout = () => {
     api.auth.logout();
     setUser(null);
+    setProfile(INITIAL_USER_PROFILE);
+    try {
+      localStorage.removeItem("pragyapath_user_profile");
+    } catch (e) {}
     showToast("You have been signed out.", "info");
   };
 
-  const updateProfile = (updates) => {
-    setProfile((prev) => {
-      const next = { ...prev, ...updates };
-      const currentEmail = user?.email || next.email || "anyabandgar458@gmail.com";
-      api.auth.updateProfile({ ...next, email: currentEmail }).catch(() => {});
-      return next;
-    });
+  const updateProfile = async (updates) => {
+    const currentEmail = updates.email || user?.email || profile.email;
+    const next = { ...profile, ...updates };
+    if (currentEmail) next.email = currentEmail;
+    setProfile(next);
+    try {
+      localStorage.setItem("pragyapath_user_profile", JSON.stringify(next));
+    } catch (e) {}
+
+    if (user) {
+      setUser((prev) => (prev ? { ...prev, ...updates, email: currentEmail || prev.email } : prev));
+    }
+
+    if (currentEmail) {
+      try {
+        const serverUser = await api.auth.updateProfile({ ...updates, email: currentEmail });
+        if (serverUser) {
+          setUser(serverUser);
+          setProfile((prev) => {
+            const merged = { ...prev, ...serverUser };
+            try {
+              localStorage.setItem("pragyapath_user_profile", JSON.stringify(merged));
+            } catch (e) {}
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn("Could not sync profile to MongoDB:", err);
+      }
+    }
   };
 
   const [toast, setToast] = useState(null);
@@ -557,7 +586,7 @@ const AppProvider = ({ children }) => {
     setDailySessions((prev) => [newSession, ...prev]);
     showToast(`Added study session: ${session.title}`, "success");
 
-    const email = user?.email || profile.email || "anyabandgar458@gmail.com";
+    const email = user?.email || profile.email || "guest";
     api.sessions.createSession({ ...session, userId: email }).then((saved) => {
       if (saved && saved.id) {
         setDailySessions((prev) =>
@@ -585,7 +614,7 @@ const AppProvider = ({ children }) => {
       ? profile.bookmarkedResourceIds.filter((id) => id !== resourceId)
       : [...profile.bookmarkedResourceIds, resourceId];
 
-    const email = user?.email || profile.email || "anyabandgar458@gmail.com";
+    const email = user?.email || profile.email || "guest";
 
     if (!isBookmarked && resourceData) {
       setCustomSavedResources((prev) => {
@@ -656,7 +685,7 @@ const AppProvider = ({ children }) => {
     setNotes((prev) => [newNote, ...prev]);
     showToast(`Saved note for ${topic}`, "success");
 
-    const email = user?.email || profile.email || "anyabandgar458@gmail.com";
+    const email = user?.email || profile.email || "guest";
     api.notes.createNote({ userId: email, topic, content }).then((saved) => {
       if (saved && (saved.id || saved._id)) {
         const actualId = saved.id || saved._id;

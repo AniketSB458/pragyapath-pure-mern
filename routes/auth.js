@@ -129,22 +129,17 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/auth/profile?email=... (Backwards-compatibility & fallback)
+// GET /api/auth/profile?email=...
 router.get('/profile', async (req, res) => {
   try {
-    const email = req.query.email || 'anyabandgar458@gmail.com';
-    let user = await User.findOne({ email: email.toLowerCase() });
+    const email = req.query.email;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email parameter is required.' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
-      user = await User.create({
-        email: email.toLowerCase(),
-        name: 'Anya Bandgar',
-        targetGoal: 'National & State Competitive Exams',
-        targetExamId: 'upsc_cse',
-        degreeOrStream: 'Bachelor Degree (Final Year / Graduate)',
-        dailyHours: 4,
-        language: 'en'
-      });
+      return res.status(404).json({ success: false, error: 'User not found.' });
     }
 
     res.json({ success: true, user });
@@ -158,7 +153,10 @@ router.get('/profile', async (req, res) => {
 router.post('/profile', async (req, res) => {
   try {
     const { email, ...updates } = req.body;
-    const targetEmail = (email || 'anyabandgar458@gmail.com').toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required to update profile.' });
+    }
+    const targetEmail = email.trim().toLowerCase();
 
     // Prevent direct password modification through general profile update
     delete updates.password;
@@ -166,8 +164,12 @@ router.post('/profile', async (req, res) => {
     const user = await User.findOneAndUpdate(
       { email: targetEmail },
       { $set: updates },
-      { new: true, upsert: true }
+      { new: true }
     );
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found to update.' });
+    }
 
     res.json({ success: true, user });
   } catch (error) {

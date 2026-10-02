@@ -6,7 +6,7 @@ const router = express.Router();
 // GET /api/notes?userId=...
 router.get('/', async (req, res) => {
   try {
-    const userId = req.query.userId || 'anyabandgar458@gmail.com';
+    const userId = req.query.userId || 'guest';
     const notes = await PersonalNote.find({ userId }).sort({ createdAt: -1 });
     res.json({ success: true, notes });
   } catch (error) {
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 // POST /api/notes
 router.post('/', async (req, res) => {
   try {
-    const { userId = 'anyabandgar458@gmail.com', topic, content } = req.body;
+    const { userId = 'guest', topic, content } = req.body;
     if (!topic || !content) {
       return res.status(400).json({ success: false, error: 'Topic and content are required' });
     }

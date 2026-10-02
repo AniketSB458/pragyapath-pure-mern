@@ -18,6 +18,7 @@ import { FocusTimer } from "./FocusTimer";
 const DashboardView = () => {
   const {
     profile,
+    user,
     setActiveTab,
     dailySessions,
     toggleDailySession,
@@ -32,21 +33,20 @@ const DashboardView = () => {
   const completedTopicsCount = allTopics.filter((t2) => profile.completedTopicIds.includes(t2.id)).length;
   const roadmapPercent = allTopics.length > 0 ? Math.round(completedTopicsCount / allTopics.length * 100) : 0;
   const accuracy = profile.questionsSolved > 0 ? Math.round(profile.correctAnswers / profile.questionsSolved * 100) : 0;
-  return <div className="space-y-4">
-      {
-    /* Sleek Compact Glass Header */
-  }
-      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl">
+  return (
+    <div className="space-y-4">
+      {/* Sleek Compact Glass Header */}
+      <div className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 rounded-2xl border border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white flex items-center justify-center">
-            <img src={logoImg} alt="PragyaPath Logo" className="w-full h-full object-cover" />
+          <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-amber-500/20 border-2 border-amber-400 shrink-0 bg-white/10 p-0.5 flex items-center justify-center">
+            <img src={logoImg} alt="PragyaPath Logo" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-              <span className="tracking-tight">{t("dash_welcome")}, {profile.name}!</span>
+            <h1 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+              <span className="tracking-tight">{t("dash_welcome")}, {user?.name || profile.name || "Student Aspirant"}!</span>
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {t("dash_intro_1")} <strong className="text-slate-800">{profile.targetGoal}</strong>. {t("dash_intro_2")}
+            <p className="text-xs text-slate-400 mt-0.5">
+              {t("dash_intro_1")} <strong className="text-amber-300">{profile.targetGoal}</strong>. {t("dash_intro_2")}
             </p>
           </div>
         </div>
@@ -400,14 +400,15 @@ const DashboardView = () => {
             </p>
             <button
               onClick={() => setActiveTab("exams")}
-              className="w-full py-2 text-center text-xs font-bold text-rose-700 hover:text-rose-900 bg-white hover:bg-rose-50 border border-rose-200 rounded-xl transition-all shadow-2xs cursor-pointer"
+              className="w-full py-2 text-center text-xs font-bold text-white hover:text-amber-300 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all shadow-2xs cursor-pointer"
             >
               {t("dash_run_deep_check")}
             </button>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 export {
   DashboardView
