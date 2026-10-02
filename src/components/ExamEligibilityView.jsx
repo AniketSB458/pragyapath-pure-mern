@@ -1,77 +1,73 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
-import { EXAMS_DATABASE } from "../data/mockData";
+import { EXAMS_DATABASE, ROADMAPS_DATABASE } from "../data/mockData";
+import { evaluateEligibility } from "../utils/eligibilityEngine";
 import {
   FileCheck2,
+  ExternalLink,
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Info,
-  Calendar,
-  ExternalLink,
+  ShieldCheck,
   Sparkles,
   BookOpen
 } from "lucide-react";
 
 const ExamEligibilityView = () => {
-  const { profile, updateProfile, setActiveExam, setActiveTab, showToast, t } = useApp();
-  const [selectedExamId, setSelectedExamId] = useState(profile.targetExamId || "gate-cs");
-  const [age, setAge] = useState(21);
+  const { profile, updateProfile, activeExam, setActiveExam, setActiveTab, setActiveRoadmap, showToast, t } = useApp();
+  const [selectedExamId, setSelectedExamId] = useState(activeExam?.id || EXAMS_DATABASE[0]?.id || "upsc_cse");
+  const [educationLevel, setEducationLevel] = useState(
+    profile.educationStage || "graduate_job_seeker"
+  );
+  const [degreeOrBranch, setDegreeOrBranch] = useState(
+    profile.degreeOrStream || "Bachelor Degree (Final Year / Graduate)"
+  );
+  const [graduationStatus, setGraduationStatus] = useState("completed");
+  const [age, setAge] = useState(22);
   const [category, setCategory] = useState("General");
-  const [degree, setDegree] = useState("B.Tech / B.E. (Final Year / Graduated)");
-  const [percentage, setPercentage] = useState(72);
-  const [attemptsMade, setAttemptsMade] = useState(0);
+  const [nationality, setNationality] = useState("Indian");
+  const [aggregatePercentage, setAggregatePercentage] = useState(72);
 
-  const selectedExam = EXAMS_DATABASE.find((e) => e.id === selectedExamId) || EXAMS_DATABASE[0];
+  const currentExam = useMemo(() => {
+    return EXAMS_DATABASE.find((e) => e.id === selectedExamId) || EXAMS_DATABASE[0];
+  }, [selectedExamId]);
 
-  const checkEligibility = () => {
-    const reasons = [];
-    let isEligible = true;
-
-    let maxAge = selectedExam.eligibilityCriteria.ageLimitMax;
-    if (category === "OBC") maxAge += 3;
-    if (category === "SC" || category === "ST") maxAge += 5;
-
-    if (age < selectedExam.eligibilityCriteria.ageLimitMin) {
-      isEligible = false;
-      reasons.push(`Minimum age required is ${selectedExam.eligibilityCriteria.ageLimitMin} years. You are ${age}.`);
-    } else if (age > maxAge) {
-      isEligible = false;
-      reasons.push(
-        `Maximum age limit for ${category} category is ${maxAge} years. You are ${age} (General limit: ${selectedExam.eligibilityCriteria.ageLimitMax}).`
-      );
-    }
-
-    if (selectedExam.eligibilityCriteria.minPercentage > 0 && percentage < selectedExam.eligibilityCriteria.minPercentage) {
-      isEligible = false;
-      reasons.push(
-        `Requires minimum ${selectedExam.eligibilityCriteria.minPercentage}% aggregate in qualifying degree. You entered ${percentage}%.`
-      );
-    }
-
-    let maxAttempts = selectedExam.eligibilityCriteria.maxAttempts;
-    if (maxAttempts > 0) {
-      if (category === "OBC") maxAttempts = Math.max(maxAttempts, 9);
-      if (category === "SC" || category === "ST") maxAttempts = 99;
-
-      if (attemptsMade >= maxAttempts) {
-        isEligible = false;
-        reasons.push(`Maximum permissible attempts for ${category} category is ${maxAttempts === 99 ? "Unlimited" : maxAttempts}. You have made ${attemptsMade}.`);
-      }
-    }
-
-    return { isEligible, reasons };
-  };
-
-  const { isEligible, reasons } = checkEligibility();
-
-  const handleSelectAsGoal = () => {
-    setActiveExam(selectedExam);
-    updateProfile({
-      targetExamId: selectedExam.id,
-      targetGoal: selectedExam.name
+  const evaluation = useMemo(() => {
+    return evaluateEligibility({
+      examId: selectedExamId,
+      educationLevel,
+      degreeOrBranch,
+      graduationStatus,
+      age,
+      category,
+      nationality,
+      aggregatePercentage
     });
-    showToast(`Target exam updated to: ${selectedExam.name}`, "success");
+  }, [
+    selectedExamId,
+    educationLevel,
+    degreeOrBranch,
+    graduationStatus,
+    age,
+    category,
+    nationality,
+    aggregatePercentage
+  ]);
+
+  const handleSelectExamAsGoal = (exam) => {
+    setActiveExam(exam);
+    updateProfile({
+      targetGoal: exam.name,
+      targetExamId: exam.id
+    });
+    const matchingRoadmap =
+      ROADMAPS_DATABASE[`roadmap_${exam.id}`] ||
+      ROADMAPS_DATABASE[`${exam.id}-roadmap`] ||
+      Object.values(ROADMAPS_DATABASE)[0];
+    if (matchingRoadmap) {
+      setActiveRoadmap(matchingRoadmap);
+    }
+    showToast(`Target goal updated to: ${exam.name}`, "success");
     setActiveTab("roadmap");
   };
 
@@ -82,241 +78,371 @@ const ExamEligibilityView = () => {
         <div>
           <h1 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
             <FileCheck2 className="w-5 h-5 text-amber-400" />
-            <span className="tracking-tight">{t("exams_banner_title")}</span>
+            <span className="tracking-tight">{t("exams_banner_title") || "National Examination Eligibility Verifier"}</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            {t("exams_banner_desc")}
+            {t("exams_banner_desc") || "Official gazette-backed statutory rules, age relaxation thresholds, and reservation audits"}
           </p>
         </div>
       </div>
 
-      {/* Exam Selection Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
-        {EXAMS_DATABASE.map((exam) => (
-          <button
-            key={exam.id}
-            onClick={() => setSelectedExamId(exam.id)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-              selectedExamId === exam.id
-                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-lg shadow-amber-500/25 border border-amber-400"
-                : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
-            }`}
-          >
-            {exam.shortName}
-          </button>
-        ))}
+      {/* Select Exam Tabs */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
+        {EXAMS_DATABASE.map((exam) => {
+          const isSelected = exam.id === selectedExamId;
+          return (
+            <button
+              key={exam.id}
+              onClick={() => {
+                setSelectedExamId(exam.id);
+                setActiveExam(exam);
+              }}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-lg shadow-amber-500/25 border border-amber-400"
+                  : "bg-slate-900/80 text-slate-300 border border-white/10 hover:border-amber-400/30 hover:bg-slate-800 backdrop-blur-md shadow-2xs"
+              }`}
+            >
+              {exam.name}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Interactive Calculator Form */}
-        <div className="lg:col-span-6 space-y-5">
-          <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4">
+      {/* Main 2-Column: Left = Interactive Eligibility Engine, Right = Exam Official Specs */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left: Interactive Eligibility Checker */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="glass-card rounded-2xl p-5 sm:p-6 shadow-xl border border-white/10 bg-slate-900/60 backdrop-blur-xl space-y-5">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-white">
-                  Eligibility Evaluation Engine
-                </h3>
+                <h2 className="text-sm font-bold text-white flex items-center space-x-2">
+                  <ShieldCheck className="w-5 h-5 text-amber-400" />
+                  <span>Check Your Eligibility for {currentExam.name}</span>
+                </h2>
                 <p className="text-xs text-slate-400">
-                  Calculated against official {selectedExam.shortName} examination gazette
+                  Instant real-time statutory rule engine calculation
                 </p>
               </div>
+
               <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-400/20 px-2 py-0.5 rounded">
-                {selectedExam.conductingBody}
+                Verified: {currentExam.verifiedDate}
               </span>
             </div>
 
-            <div className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+            {/* Input Form */}
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Your Age (Years)</label>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Education Level
+                  </label>
+                  <select
+                    value={educationLevel}
+                    onChange={(e) => setEducationLevel(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
+                  >
+                    <option value="ug_engineering">Undergraduate Engineering (B.Tech/B.E.)</option>
+                    <option value="ug_general">Undergraduate General (B.Sc, BCA, B.Com, B.A.)</option>
+                    <option value="diploma">Polytechnic Diploma (3-Year)</option>
+                    <option value="12th_science">12th Standard Science (PCM/PCB)</option>
+                    <option value="graduate_job_seeker">Completed Bachelor Degree (Graduate)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Degree / Branch
+                  </label>
                   <input
-                    type="number"
-                    min="16"
-                    max="60"
+                    type="text"
+                    value={degreeOrBranch}
+                    onChange={(e) => setDegreeOrBranch(e.target.value)}
+                    placeholder="e.g. Computer Science, Mechanical"
+                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Year of Study
+                  </label>
+                  <select
+                    value={graduationStatus}
+                    onChange={(e) => setGraduationStatus(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
+                  >
+                    <option value="pre_final_year">3rd Year (Pre-Final)</option>
+                    <option value="final_year">4th Year (Final Year)</option>
+                    <option value="completed">Completed / Graduated</option>
+                    <option value="pursuing_early">1st / 2nd Year</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Current Age: <strong className="text-amber-400">{age} yrs</strong>
+                  </label>
+                  <input
+                    type="range"
+                    min="15"
+                    max="45"
                     value={age}
                     onChange={(e) => setAge(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-bold"
+                    className="w-full accent-amber-400 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Social Category</label>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Social Category
+                  </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
                   >
-                    <option value="General">General / EWS</option>
-                    <option value="OBC">OBC (Non-Creamy Layer)</option>
+                    <option value="General">General (Unreserved)</option>
+                    <option value="OBC-NCL">OBC-NCL</option>
                     <option value="SC">SC (Scheduled Caste)</option>
                     <option value="ST">ST (Scheduled Tribe)</option>
+                    <option value="EWS">EWS</option>
+                    <option value="PwD">PwD (Benchmark Disabilities)</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-300 mb-1">Current Academic Qualification</label>
-                <select
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="B.Tech / B.E. (Final Year / Graduated)">B.Tech / B.E. (Final Year or Graduated)</option>
-                  <option value="Degree in Science / Arts / Commerce">Any Recognized Bachelor Degree (Final Year / Graduated)</option>
-                  <option value="Diploma in Engineering">Diploma in Engineering (Polytechnic)</option>
-                  <option value="12th Standard Passed">12th Standard Passed (HSC / Intermediate)</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Graduation Percentage / CGPA</label>
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Degree Aggregate: <strong className="text-amber-400">{aggregatePercentage}%</strong>
+                  </label>
                   <input
-                    type="number"
-                    min="35"
+                    type="range"
+                    min="40"
                     max="100"
-                    value={percentage}
-                    onChange={(e) => setPercentage(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-bold"
+                    value={aggregatePercentage}
+                    onChange={(e) => setAggregatePercentage(Number(e.target.value))}
+                    className="w-full accent-amber-400 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Previous Attempts Made</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="20"
-                    value={attemptsMade}
-                    onChange={(e) => setAttemptsMade(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-bold"
-                  />
+                  <label className="block font-bold text-slate-300 mb-1">
+                    Nationality / Citizenship
+                  </label>
+                  <select
+                    value={nationality}
+                    onChange={(e) => setNationality(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-white/15 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
+                  >
+                    <option value="Indian">Citizen of India</option>
+                    <option value="Other">Non-Indian / Foreign National</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* Verdict Alert */}
+            {/* Verdict Box */}
             <div
-              className={`p-4 rounded-xl border space-y-2 ${
-                isEligible
+              className={`p-4 rounded-xl border transition-all ${
+                evaluation.isEligible === "eligible"
                   ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                  : evaluation.isEligible === "conditionally_eligible"
+                  ? "bg-amber-500/15 border-amber-400/30 text-amber-300"
                   : "bg-rose-500/15 border-rose-500/30 text-rose-300"
               }`}
             >
-              <div className="flex items-center space-x-2">
-                {isEligible ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-start space-x-3">
+                {evaluation.isEligible === "eligible" ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                ) : evaluation.isEligible === "conditionally_eligible" ? (
+                  <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 ) : (
-                  <XCircle className="w-5 h-5 text-rose-400" />
+                  <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
                 )}
-                <h4 className="text-sm font-extrabold text-white">
-                  {isEligible ? "Verified Eligible to Register & Appear" : "Ineligible Under Current Criteria"}
-                </h4>
+
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-white">{evaluation.headline}</h3>
+                  <p className="text-xs mt-1 leading-relaxed opacity-90">{evaluation.summary}</p>
+                  <p className="text-xs mt-2 font-semibold text-amber-300">{evaluation.actionAdvice}</p>
+                </div>
               </div>
 
-              {isEligible ? (
-                <p className="text-xs text-emerald-200 leading-relaxed">
-                  You meet all age limits, academic qualifications, and attempt restrictions for{" "}
-                  <strong>{selectedExam.name}</strong> under the {category} reservation category.
-                </p>
-              ) : (
-                <ul className="text-xs list-disc list-inside space-y-1 text-rose-200">
-                  {reasons.map((r, idx) => (
-                    <li key={idx}>{r}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+              {/* Systematic Criteria Breakdown */}
+              <div className="mt-4 space-y-2.5">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Detailed Verification Audit
+                </h4>
 
-            <button
-              onClick={handleSelectAsGoal}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
-            >
-              <span>Adopt {selectedExam.shortName} as Primary Target Goal</span>
-              <Sparkles className="w-4 h-4 fill-slate-950" />
-            </button>
+                {evaluation.checks.map((check, cIdx) => (
+                  <div
+                    key={cIdx}
+                    className="p-3 rounded-xl border border-white/10 bg-slate-950/70 flex items-start justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center space-x-2">
+                        {check.passed === true ? (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        ) : check.passed === false ? (
+                          <span className="w-2 h-2 rounded-full bg-rose-500" />
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        )}
+                        <p className="font-bold text-white">{check.category}</p>
+                      </div>
+                      <p className="text-slate-400 text-[11px]">{check.explanation}</p>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                        check.passed === true
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                          : check.passed === false
+                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                          : "bg-amber-500/20 text-amber-300 border border-amber-400/30"
+                      }`}
+                    >
+                      {check.passed === true ? "PASSED" : check.passed === false ? "FAILED" : "CONDITIONAL"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <span className="text-slate-400 text-[11px]">
+                  Official Rule Source: <strong className="text-white">{evaluation.officialClause}</strong>
+                </span>
+                <a
+                  href={evaluation.officialSourceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1"
+                >
+                  <span>Official Portal</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Official Exam Dossier & Structure */}
-        <div className="lg:col-span-6 space-y-4">
-          <div className="glass-card rounded-2xl p-5 border border-white/10 bg-slate-900/80 backdrop-blur-xl shadow-xl space-y-4">
-            <div className="flex items-start justify-between">
+        {/* Right: Comprehensive Official Exam Dossier */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="glass-card rounded-2xl p-6 shadow-xl space-y-5 border border-white/10 bg-slate-900/80 backdrop-blur-xl">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div>
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded border border-amber-400/20">
-                  Official Dossier
+                <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-400/20 uppercase">
+                  {currentExam.conductingBody}
                 </span>
-                <h2 className="text-base sm:text-lg font-bold text-white mt-1">
-                  {selectedExam.name} ({selectedExam.shortName})
+                <h2 className="text-lg sm:text-xl font-extrabold text-white mt-1">
+                  {currentExam.fullName}
                 </h2>
               </div>
 
-              <a
-                href={selectedExam.officialWebsite}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white text-xs font-semibold border border-white/15 transition-all"
+              <button
+                onClick={() => handleSelectExamAsGoal(currentExam)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/25 transition-all cursor-pointer self-start sm:self-auto"
               >
-                <span>Official Portal</span>
-                <ExternalLink className="w-3 h-3 text-amber-400" />
-              </a>
+                Set as My Goal & Build Roadmap →
+              </button>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              {selectedExam.description}
-            </p>
-
-            {/* Quick Stat Highlights */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-white/10">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Conducting Body</span>
-                <p className="font-bold text-white mt-0.5">{selectedExam.conductingBody}</p>
+            {/* Quick Specs Grid */}
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-950/70 border border-white/10 text-xs">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Notification Window
+                </span>
+                <p className="font-bold text-white mt-0.5">{currentExam.notificationPeriod}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-white/10">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Frequency</span>
-                <p className="font-bold text-white mt-0.5">{selectedExam.frequency}</p>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Examination Schedule
+                </span>
+                <p className="font-bold text-white mt-0.5">{currentExam.examDates}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-white/10">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Application Cycle</span>
-                <p className="font-bold text-amber-300 mt-0.5">{selectedExam.typicalMonth}</p>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Age Rules (General)
+                </span>
+                <p className="font-bold text-amber-300 mt-0.5">{currentExam.ageCriteriaGeneral}</p>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Category Relaxations
+                </span>
+                <p className="font-bold text-white mt-0.5">
+                  OBC: {currentExam.ageRelaxations.obc} • SC/ST: {currentExam.ageRelaxations.scSt}
+                </p>
               </div>
             </div>
 
-            {/* Exam Stages / Pattern */}
+            {/* Official Qualification Clause */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center space-x-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-                <span>Examination Architecture & Stages</span>
-              </h4>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-1">
+                Official Eligibility Mandate
+              </h3>
+              <p className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-white/10 leading-relaxed">
+                {currentExam.educationalQualification}
+              </p>
+            </div>
 
+            {/* Exam Pattern & Stages */}
+            <div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                Exam Stages & Marking Pattern
+              </h3>
               <div className="space-y-2">
-                {selectedExam.stages.map((stg, sIdx) => (
+                {currentExam.examStages.map((stage, sIdx) => (
                   <div
                     key={sIdx}
-                    className="p-3 rounded-xl bg-slate-950/60 border border-white/10 flex items-start space-x-3 text-xs"
+                    className="p-3 rounded-xl border border-white/10 bg-slate-950/60 space-y-1 text-xs"
                   >
-                    <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/30 flex items-center justify-center font-bold text-xs shrink-0">
-                      {sIdx + 1}
-                    </span>
-                    <div>
-                      <h5 className="font-bold text-white">{stg.name}</h5>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{stg.pattern}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-amber-400">{stage.stageName}</p>
+                      <span className="font-bold text-slate-200 bg-white/10 px-2 py-0.5 rounded text-[11px]">
+                        {stage.marks} Marks • {stage.duration}
+                      </span>
                     </div>
+                    <p className="text-slate-300 text-[11px]">{stage.format}</p>
+                    <p className="text-amber-300/90 font-medium text-[11px]">
+                      <strong>Negative Marking:</strong> {stage.negativeMarking}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Negative Marking Rule */}
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-start space-x-2 text-xs">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div className="text-amber-200">
-                <strong className="text-white font-bold">Negative Marking Rule: </strong>
-                {selectedExam.negativeMarking
-                  ? "Penalty of 1/3rd (0.66 marks) applies for each incorrect response. Skipping yields 0 marks."
-                  : "No negative marking applicable in this examination."}
+            {/* Subject Weightage Breakdown */}
+            <div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                Historical Subject Weightage Distribution
+              </h3>
+
+              <div className="space-y-2.5">
+                {currentExam.subjectWeightage.map((sub, sIdx) => (
+                  <div key={sIdx} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-300">{sub.subject}</span>
+                      <span className="font-bold text-amber-400">{sub.weightagePercentage}%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-amber-400 to-amber-500 h-1.5 rounded-full"
+                        style={{ width: `${Math.min(100, sub.weightagePercentage * 3)}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Key Topics: {sub.keyTopics.join(", ")}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
