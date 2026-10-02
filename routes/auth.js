@@ -149,14 +149,29 @@ router.get('/profile', async (req, res) => {
   }
 });
 
-// POST /api/auth/profile - Update profile
-router.post('/profile', async (req, res) => {
+// POST or PUT /api/auth/profile - Update profile
+const handleProfileUpdate = async (req, res) => {
   try {
     const { email, ...updates } = req.body;
-    if (!email) {
+    let targetEmail = (email || '').trim().toLowerCase();
+
+    // If email is not in body, check JWT token in Authorization header
+    if (!targetEmail && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1];
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || 'pragyapath_mern_pure_secret_key_2026');
+        if (decoded && decoded.email) {
+          targetEmail = decoded.email.trim().toLowerCase();
+        }
+      } catch (e) {
+        // Token verify fallback
+      }
+    }
+
+    if (!targetEmail) {
       return res.status(400).json({ success: false, error: 'Email is required to update profile.' });
     }
-    const targetEmail = email.trim().toLowerCase();
 
     // Prevent direct password modification through general profile update
     delete updates.password;
@@ -176,6 +191,9 @@ router.post('/profile', async (req, res) => {
     console.error('Error updating profile:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
-});
+};
+
+router.post('/profile', handleProfileUpdate);
+router.put('/profile', handleProfileUpdate);
 
 export default router;
