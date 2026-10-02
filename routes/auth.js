@@ -82,9 +82,10 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        error: 'Invalid email or password.'
+        code: 'USER_NOT_FOUND',
+        error: 'No account found with this email. Only registered users have access to sign in. Please register first.'
       });
     }
 
@@ -92,7 +93,8 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid email or password.'
+        code: 'INVALID_PASSWORD',
+        error: 'Incorrect password. Please check your password and try again.'
       });
     }
 
