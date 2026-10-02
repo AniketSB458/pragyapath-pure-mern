@@ -269,9 +269,6 @@ const Header = ({ onOpenProfileModal }) => {
                   <span className="text-xs font-semibold text-white hidden sm:inline group-hover:text-amber-300 transition-colors">
                     {displayName.split(" ")[0]}
                   </span>
-                  <span className="hidden md:inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-400 text-slate-950">
-                    PRO
-                  </span>
                 </button>
 
                 <button
