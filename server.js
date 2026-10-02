@@ -70,6 +70,40 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Live MongoDB Collections Viewer endpoints
+app.get('/api/mern/collections', async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    if (!db) return res.status(503).json({ error: 'Database not connected' });
+    const cols = await db.listCollections().toArray();
+    const result = [];
+    for (const c of cols) {
+      const count = await db.collection(c.name).countDocuments();
+      result.push({ name: c.name, count });
+    }
+    res.json({ database: db.databaseName, collections: result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/mern/collections/:collection', async (req, res) => {
+  try {
+    const collName = req.params.collection;
+    const db = mongoose.connection.db;
+    if (!db) return res.status(503).json({ error: 'Database not connected' });
+    const docs = await db.collection(collName).find({}).project({ password: 0 }).toArray();
+    res.json({
+      database: db.databaseName,
+      collection: collName,
+      totalCount: docs.length,
+      documents: docs
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
