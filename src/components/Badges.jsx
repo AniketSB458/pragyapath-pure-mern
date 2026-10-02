@@ -148,11 +148,11 @@ const Badges = () => {
         tier: "Silver",
         icon: ShieldCheck,
         color: {
-          bg: "bg-rose-50",
-          border: "border-rose-200",
-          text: "text-rose-900",
-          gradient: "from-rose-500 to-pink-600",
-          iconBg: "bg-rose-500/15 text-rose-600"
+          bg: "bg-amber-400/10",
+          border: "border-amber-400/30",
+          text: "text-amber-300",
+          gradient: "from-amber-400 to-amber-500",
+          iconBg: "bg-amber-400/20 text-amber-300"
         },
         isUnlocked: profile.strongTopics?.length > 0,
         progress: profile.strongTopics?.length > 0 ? 100 : 60,

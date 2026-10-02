@@ -2,26 +2,26 @@ import { useState, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import logoImg from "../assets/logo.png";
 import {
-  GraduationCap,
-  HelpCircle,
-  Route,
-  BotMessageSquare,
-  BookmarkCheck,
-  LayoutDashboard,
   Compass,
   FileCheck2,
-  CalendarCheck2,
-  Award,
+  GitFork,
+  BookOpen,
+  CalendarDays,
+  Target,
+  FileSpreadsheet,
+  BotMessageSquare,
+  BookmarkCheck,
   ChevronDown,
   X
 } from "lucide-react";
 
-const Navigation = () => {
+const Navigation = ({ onOpenProfileModal }) => {
   const { activeTab, setActiveTab, t } = useApp();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -33,26 +33,26 @@ const Navigation = () => {
   }, []);
 
   const primaryNavItems = [
-    { id: "resources", label: t("nav_resources"), icon: GraduationCap },
-    { id: "practice", label: t("nav_practice"), icon: HelpCircle },
-    { id: "roadmap", label: t("nav_roadmap"), icon: Route },
-    { id: "mentor", label: t("nav_mentor"), icon: BotMessageSquare },
-    { id: "library", label: t("nav_library"), icon: BookmarkCheck }
+    { id: "careers", label: t("nav_careers"), icon: Compass },
+    { id: "exams", label: t("nav_exams"), icon: FileCheck2 },
+    { id: "roadmap", label: t("nav_roadmap"), icon: GitFork },
+    { id: "resources", label: t("nav_resources"), icon: BookOpen },
+    { id: "planner", label: t("nav_planner"), icon: CalendarDays },
+    { id: "mentor", label: t("nav_mentor"), icon: BotMessageSquare }
   ];
 
   const secondaryNavItems = [
-    { id: "planner", label: t("nav_planner"), icon: CalendarCheck2 },
-    { id: "mocks", label: t("nav_mocks"), icon: Award },
-    { id: "careers", label: t("nav_careers"), icon: Compass },
-    { id: "exams", label: t("nav_exams"), icon: FileCheck2 }
+    { id: "practice", label: t("nav_practice"), icon: Target },
+    { id: "mocks", label: t("nav_mocks"), icon: FileSpreadsheet },
+    { id: "library", label: t("nav_library"), icon: BookmarkCheck }
   ];
 
   const activeSecondaryItem = secondaryNavItems.find((item) => item.id === activeTab);
 
   return (
     <>
-      {/* Sleek Compact Frosted Glass Desktop Navigation */}
-      <nav className="bg-white/70 backdrop-blur-xl border-b border-white/50 sticky top-14 z-30 hidden md:block shadow-[0_2px_12px_-2px_rgba(0,0,0,0.03)]">
+      {/* Sleek Obsidian Glass Desktop Navigation (Yellow, Black & White Theme) */}
+      <nav className="bg-slate-950/85 backdrop-blur-xl border-b border-white/10 sticky top-14 z-30 hidden md:block shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             <div className="flex items-center space-x-1">
@@ -61,8 +61,8 @@ const Navigation = () => {
                 onClick={() => setActiveTab("dashboard")}
                 className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === "dashboard"
-                    ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white shadow-md shadow-pink-500/25 border border-white/20 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300 font-bold"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
                 }`}
                 title="PragyaPath Dashboard & Overview"
               >
@@ -85,11 +85,11 @@ const Navigation = () => {
                     onClick={() => setActiveTab(item.id)}
                     className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white shadow-md shadow-pink-500/25 border border-white/20 font-bold"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                        ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300 font-bold"
+                        : "text-slate-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-500"}`} />
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-slate-950" : "text-amber-400"}`} />
                     <span>{item.label}</span>
                   </button>
                 );
@@ -101,13 +101,13 @@ const Navigation = () => {
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeSecondaryItem
-                      ? "bg-pink-50/80 backdrop-blur-md text-pink-700 font-bold border border-pink-200/80 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                      ? "bg-amber-400/20 text-amber-300 font-bold border border-amber-400/40 shadow-2xs"
+                      : "text-slate-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
                   {activeSecondaryItem ? (
                     <>
-                      <activeSecondaryItem.icon className="w-3.5 h-3.5 text-pink-600" />
+                      <activeSecondaryItem.icon className="w-3.5 h-3.5 text-amber-400" />
                       <span>{activeSecondaryItem.label}</span>
                     </>
                   ) : (
@@ -117,7 +117,7 @@ const Navigation = () => {
                 </button>
 
                 {isMoreOpen && (
-                  <div className="absolute left-0 mt-2 w-52 glass-card rounded-2xl shadow-xl border border-white/80 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute left-0 mt-2 w-52 bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/15 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 text-white">
                     {secondaryNavItems.map((item) => {
                       const Icon = item.icon;
                       const isActive = activeTab === item.id;
@@ -130,11 +130,11 @@ const Navigation = () => {
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition-colors cursor-pointer ${
                             isActive
-                              ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white font-bold shadow-xs"
-                              : "text-slate-700 hover:bg-white/70"
+                              ? "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold shadow-xs"
+                              : "text-slate-300 hover:text-white hover:bg-white/10"
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500"}`} />
+                          <Icon className={`w-4 h-4 ${isActive ? "text-slate-950" : "text-amber-400"}`} />
                           <span>{item.label}</span>
                         </button>
                       );
@@ -147,20 +147,20 @@ const Navigation = () => {
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation Bar (Glassmorphic with PragyaPath Logo Icon) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-white/60 px-2 py-1 flex items-center justify-around safe-area-pb shadow-lg">
+      {/* Mobile Bottom Navigation Bar (Obsidian Glass with PragyaPath Logo Icon) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-white/10 px-2 py-1 flex items-center justify-around safe-area-pb shadow-2xl text-white">
         {/* Home Button with PragyaPath Emblem Logo as Icon */}
         <button
           onClick={() => setActiveTab("dashboard")}
           className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl cursor-pointer transition-all ${
-            activeTab === "dashboard" ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500 hover:text-slate-800"
+            activeTab === "dashboard" ? "text-amber-400 font-bold bg-amber-400/10" : "text-slate-400 hover:text-white"
           }`}
           title="PragyaPath Home"
         >
           <div
             className={`w-7 h-7 rounded-xl overflow-hidden border transition-all bg-white flex items-center justify-center ${
               activeTab === "dashboard"
-                ? "border-amber-400 ring-2 ring-pink-500 shadow-md shadow-amber-500/25 scale-110"
+                ? "border-amber-400 ring-2 ring-amber-400 shadow-md shadow-amber-500/25 scale-110"
                 : "border-amber-300/80 shadow-2xs hover:scale-105"
             }`}
           >
@@ -181,7 +181,7 @@ const Navigation = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
-                isActive ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500"
+                isActive ? "text-amber-400 font-bold bg-amber-400/10" : "text-slate-400 hover:text-white"
               }`}
             >
               <Icon className="w-5 h-5" />
@@ -194,7 +194,7 @@ const Navigation = () => {
         <button
           onClick={() => setActiveTab("mentor")}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
-            activeTab === "mentor" ? "text-pink-600 font-bold bg-pink-50/70" : "text-slate-500"
+            activeTab === "mentor" ? "text-amber-400 font-bold bg-amber-400/10" : "text-slate-400 hover:text-white"
           }`}
           title="AI Mentor"
         >
@@ -207,8 +207,8 @@ const Navigation = () => {
           onClick={() => setIsMobileMoreOpen(true)}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl cursor-pointer ${
             activeSecondaryItem || activeTab === "library"
-              ? "text-pink-600 font-bold bg-pink-50/70"
-              : "text-slate-500"
+              ? "text-amber-400 font-bold bg-amber-400/10"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           <BookmarkCheck className="w-5 h-5" />
@@ -221,23 +221,23 @@ const Navigation = () => {
       {/* Mobile Drawer */}
       {isMobileMoreOpen && (
         <div
-          className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex flex-col justify-end"
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col justify-end"
           onClick={() => setIsMobileMoreOpen(false)}
         >
           <div
-            className="glass-card rounded-t-3xl p-5 space-y-3 shadow-2xl border border-white/80 animate-in slide-in-from-bottom duration-200"
+            className="bg-slate-900 border border-white/15 rounded-t-3xl p-5 space-y-3 shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-200/50 pb-3">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 rounded-lg overflow-hidden border border-amber-400 bg-white">
                   <img src={logoImg} alt="Logo" className="w-full h-full object-cover" />
                 </div>
-                <span className="text-sm font-bold text-slate-900">{t("all_modules")}</span>
+                <span className="text-sm font-bold text-white">{t("all_modules")}</span>
               </div>
               <button
                 onClick={() => setIsMobileMoreOpen(false)}
-                className="p-1.5 rounded-xl bg-white/60 text-slate-400 hover:text-slate-700"
+                className="p-1.5 rounded-xl bg-white/10 text-slate-300 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -249,13 +249,13 @@ const Navigation = () => {
                   setActiveTab("library");
                   setIsMobileMoreOpen(false);
                 }}
-                className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold ${
+                className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold cursor-pointer ${
                   activeTab === "library"
-                    ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white border-white/30 shadow-xs"
-                    : "bg-white/60 text-slate-700 border-white/80"
+                    ? "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 border-amber-300 shadow-xs"
+                    : "bg-slate-800/80 text-slate-200 border-white/10 hover:bg-slate-800"
                 }`}
               >
-                <BookmarkCheck className="w-4 h-4" />
+                <BookmarkCheck className="w-4 h-4 text-amber-400" />
                 <span>{t("nav_library")}</span>
               </button>
 
@@ -269,13 +269,13 @@ const Navigation = () => {
                       setActiveTab(item.id);
                       setIsMobileMoreOpen(false);
                     }}
-                    className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold ${
+                    className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold cursor-pointer ${
                       isActive
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white border-white/30 shadow-xs"
-                        : "bg-white/60 text-slate-700 border-white/80"
+                        ? "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 border-amber-300 shadow-xs"
+                        : "bg-slate-800/80 text-slate-200 border-white/10 hover:bg-slate-800"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-slate-950" : "text-amber-400"}`} />
                     <span>{item.label}</span>
                   </button>
                 );

@@ -218,56 +218,56 @@ const AppContent = () => {
       <Toast />
 
       {/* Footer */}
-      <footer className="glass-card border-x-0 border-b-0 mt-12 py-8 text-xs text-slate-500 mb-16 md:mb-0">
+      <footer className="border-t border-white/10 bg-slate-950/80 backdrop-blur-md mt-12 py-8 text-xs text-slate-400 mb-16 md:mb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* PragyaPath Brand Logo */}
           <div
             onClick={() => setActiveTab("dashboard")}
             className="flex items-center space-x-2.5 cursor-pointer group"
           >
-            <div className="w-7 h-7 rounded-lg overflow-hidden border border-amber-400 shadow-sm shrink-0 group-hover:scale-105 transition-transform bg-white flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg overflow-hidden border border-amber-400 shadow-sm shrink-0 group-hover:scale-105 transition-transform bg-white/10 flex items-center justify-center">
               <img
                 src={logoImg}
                 alt="PragyaPath Logo"
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="font-extrabold text-slate-900 text-sm">
+            <span className="font-extrabold text-white text-sm">
               PragyaPath
             </span>
-            <span className="text-slate-300">|</span>
-            <span>{t("tagline")}</span>
+            <span className="text-slate-500">|</span>
+            <span className="text-slate-300">{t("tagline")}</span>
           </div>
 
           {/* Footer Navigation */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-600 font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-300 font-medium">
             <button
               onClick={() => setActiveTab("careers")}
-              className="hover:text-pink-600 cursor-pointer"
+              className="hover:text-amber-400 transition-colors cursor-pointer"
             >
               {t("nav_careers")}
             </button>
             <button
               onClick={() => setActiveTab("exams")}
-              className="hover:text-pink-600 cursor-pointer"
+              className="hover:text-amber-400 transition-colors cursor-pointer"
             >
               {t("nav_exams")}
             </button>
             <button
               onClick={() => setActiveTab("roadmap")}
-              className="hover:text-pink-600 cursor-pointer"
+              className="hover:text-amber-400 transition-colors cursor-pointer"
             >
               {t("nav_roadmap")}
             </button>
             <button
               onClick={() => setActiveTab("resources")}
-              className="hover:text-pink-600 cursor-pointer"
+              className="hover:text-amber-400 transition-colors cursor-pointer"
             >
               {t("nav_resources")}
             </button>
             <button
               onClick={() => setActiveTab("practice")}
-              className="hover:text-pink-600 cursor-pointer"
+              className="hover:text-amber-400 transition-colors cursor-pointer"
             >
               {t("nav_practice")}
             </button>

@@ -98,7 +98,7 @@ const ProfileModal = ({ isOpen, onClose, onComplete }) => {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                {t("profile_modal_subtitle")}
+                {t("profile_modal_subtitle") || t("profile_modal_sub") || "Your private workspace, curriculum milestones, and diagnostic goals"}
               </p>
             </div>
           </div>
